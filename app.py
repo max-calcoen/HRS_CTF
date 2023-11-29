@@ -1,8 +1,11 @@
 from fileinput import filename
 import os
-from flask import Flask, current_app, send_from_directory  # type: ignore
+from flask import Flask, current_app, send_from_directory, session, request  # type: ignore
+import secrets
+import sqlite3
 
 app = Flask(__name__, static_url_path="")
+app.secret_key = secrets.token_hex()
 
 
 @app.route("/")
@@ -12,7 +15,21 @@ def home():
 
 @app.route("/login", methods=["POST"])
 def login():
-    pass
+    # check if user exists
+    connection = sqlite3.connect("users.sqlite")
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT * FROM users WHERE username = ?", (request.json["username"],)
+    )
+    user = cursor.fetchone()
+    if user is None:
+        return "User not found"
+
+    # check if password is correct
+    if user[2] != request.json["password"]:
+        return "Incorrect password"
+
+    return "Logged in"
 
 
 @app.route("/file_request/<path:filename>", methods=["POST"])

@@ -16,7 +16,7 @@ def SQLAdmin():
         cursor.execute(request.form["query"])
     except:
         return "ERROR: query failed"
-    return [i[0] for i in cursor.fetchall()]
+    return [i[1] for i in cursor.fetchall()]
 
 
 if __name__ == "__main__":

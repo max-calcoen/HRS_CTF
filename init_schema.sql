@@ -1,5 +1,8 @@
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    password TEXT NOT NULL username TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    passhash TEXT NOT NULL,
+    gympoints INTEGER DEFAULT 0 NOT NULL,
+    completedprobelsm TEXT DEFAULT "[]"
 );

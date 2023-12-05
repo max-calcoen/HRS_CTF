@@ -4,5 +4,12 @@ CREATE TABLE users (
     username TEXT UNIQUE NOT NULL,
     passhash TEXT NOT NULL,
     gympoints INTEGER DEFAULT 0 NOT NULL,
-    completedprobelsm TEXT DEFAULT "[]"
+    completedproblems TEXT DEFAULT "[]"
 );
+-- sample user
+-- admin password: Adm1n
+INSERT INTO users (username, passhash)
+VALUES (
+        "admin",
+        "$2b$12$zaDW0OgchpM2Oy6hXSHARuf9KFq3ATiOiJneOCbLkrRDxEWXhbv/m"
+    );

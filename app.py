@@ -1,6 +1,5 @@
-from fileinput import filename
 import os
-from flask import Flask, current_app, send_from_directory, session, request, jsonify, redirect  # type: ignore
+from flask import Flask, current_app, send_from_directory, session, request, jsonify, redirect, render_template  # type: ignore
 import secrets
 import sqlite3
 import bcrypt
@@ -50,7 +49,6 @@ def signup():
     )
     connection.commit()
     connection.close()
-    # TODO: sign in with their info and add to session
     session_token = os.urandom(24).hex()
     redis_client.set(session_token, user[0])
     session["token"] = session_token
@@ -78,9 +76,11 @@ def login():
     if bcrypt.checkpw(
         request.form["password"].encode("utf-8"), user[2].encode("utf-8")
     ):
-        session["user_id"] = user[0]
+        session_token = os.urandom(24).hex()
+        redis_client.set(session_token, user[0])
+        session["token"] = session_token
         connection.close()
-        pass
+        return jsonify({"success": "Login successful"}), 200
     connection.close()
     return jsonify({"error": "Incorrect username or password"}), 401
 
@@ -100,11 +100,65 @@ def request_server():
     pass
 
 
+# if logged in, return id, otherwise false
 def is_logged_in():
     global redis_client
     session_token = session.get("token")
     # check if token exists and matches session cache
-    return session_token is not None and redis_client.get(session_token) is not None
+    return (
+        redis_client.get(session_token)
+        if session_token is not None and redis_client.get(session_token) is not None
+        else False
+    )
+
+
+@app.route("/gym")
+def get_gym():
+    # get gym data
+    if not is_logged_in():
+        return render_template("gym.html", [])
+    connection = sqlite3.connect("users.sqlite")
+    cur = connection.cursor()
+    cur.execute(
+        "SELECT completedproblems FROM users WHERE id = ?",
+        (redis_client.get(session.get("token"))),
+    )
+    probs = cur.fetchone()
+    connection.close()
+    probs = [int(prob) for prob in probs[0].split(",")]
+    print(probs)
+    return render_template("gym.html", probs)
+
+
+@app.route("/probdone", methods=["POST"])
+def probdone():
+    prob_id = request.form["prob_id"]
+    if not is_logged_in():
+        return jsonify({"error": "Not logged in"}), 401
+
+    # sanitize user input
+    try:
+        prob_id = int(prob_id)
+    except:
+        return jsonify({"error": "Invalid problem id"}), 400
+    connection = sqlite3.connect("users.sqlite")
+    cur = connection.cursor()
+    cur.execute(
+        "SELECT completedproblems FROM users WHERE id = ?",
+        (redis_client.get(session.get("token"))),
+    )
+    probs = cur.fetchone()[0].strip("[]").split(", ")
+    try:
+        probs = [int(prob) for prob in probs]
+    except:
+        probs = []
+    probs.append(int(prob_id))
+    connection.executescript(
+        f"UPDATE users SET completedproblems = '{str(probs)}' WHERE id={redis_client.get(session.get('token'))}"
+    )
+    connection.commit()
+    connection.close()
+    return ""
 
 
 if __name__ == "__main__":

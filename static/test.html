@@ -3,9 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>hello</title>
+    <title>hello world</title>
   </head>
   <body>
-    world
+    <form action="/signin" method="post">
+      <label for="username">username</label>
+      <input type="text" name="username" id="uname" />
+      <label for="password">password</label>
+      <input type="password" name="password" id="uname" />
+      <input type="submit" value="sign in" />
+    </form>
+
+    <br />
+    <form action="/probdone" method="post">
+      <input type="number" name="prob_id" id="prob_id" />
+      <input type="submit" value="submit done prob" />
+    </form>
   </body>
 </html>

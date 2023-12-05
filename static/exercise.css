@@ -1,0 +1,27 @@
+body.exerciseContainer {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+
+
+#files{
+    display: none;
+}
+#files_option ~ #files{
+    display: block;
+}
+
+
+#hint{
+    display: none;
+}
+#hint_option:checked ~ #hint {
+    display: block;
+  }
+

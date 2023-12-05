@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<head>
+  <title>Exercise</title>
+  <link rel="stylesheet" type="text/css" href="/static/exercise.css" />
+</head>
+<body class="exerciseContainer">
+  <div id="title">{{exercise.title}}, {{exercise.points}} points</div>
+  <br />
+  <div id="hintDesContainer">
+    <div id="description">{{exercise.description}}</div>
+    <div id="hints">
+      <input type="checkbox" id="hint_option" />
+      <label for="hint_option">Click to view a hint</label><br />
+      <div id="hint"><label>{{exercise.hint}}</label><br /></div>
+    </div>
+  </div>
+  <br />
+  <div id="view_files">
+    <input type="checkbox" id="files_option" />
+    <label for="files_option">Download the problem's files:</label>
+    <div id="files">
+      <ul>
+        {%for link in exercise.files[0]%}
+        <li><a href="{{link}}" download>Download</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div id="flag">
+    <label for="flag_input">Enter your flag:</label><br />
+    <input type="text" name="flag_input" required /><br />
+  </div>
+  <input type="submit" value="Submit your flag!" />
+</body>

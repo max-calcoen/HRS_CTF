@@ -4,14 +4,15 @@
     <title>Gym Page</title>
     <link rel="stylesheet" type="text/css" href="/static/gym.css" />
   </head>
-<body>
+  <body>
     <div class="gym-container">
-        {% for exercise in exercises %}
-            <div class="exercise-card">
-                <h3>{{ exercise.title }}</h3>
-                <p>{{ exercise.description }}</p> 
-            </div>
-        {% endfor %}
+      {% for exercise in exercises %}
+      <div class="exercise-card">
+        <h3>{{ exercise.title }}</h3>
+        <p>{{ exercise.description }}</p>
+        <p>{{ exercise.points }}</p>
+      </div>
+      {% endfor %}
     </div>
-</body>
+  </body>
 </html>

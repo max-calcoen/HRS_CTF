@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login Page</title>
+    <link rel="stylesheet" type="text/css" href="/static/login.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <!-- Google Sign-In Button -->
+      <div class="google-btn">
+        <button onclick="handleGoogleLogin()">Sign in with Google</button>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider">OR</div>
+
+      <!-- Sign-Up Form -->
+      <form action="/create_account" method="post">
+        <input type="text" name="username" placeholder="Username" required />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+        <button type="submit">Create Account</button>
+      </form>
+    </div>
+  </body>
+</html>

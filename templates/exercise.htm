@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Exercise</title>
+    <link rel="stylesheet" type="text/css" href="/static/exercise.css" />
+  </head>
+  <body class="exerciseContainer">
+    <div class="exercise-content">
+      <h1 class="exercise-title">{{ exercise.title }}</h1>
+      <div class="exercise-points">{{ exercise.points }} points</div>
+
+      <div class="exercise-section">
+        <h2>Description</h2>
+        <p>{{ exercise.description }}</p>
+      </div>
+
+      <div class="exercise-section">
+        <input type="checkbox" id="hint_option" />
+        <label for="hint_option">Click to view a hint</label>
+        <div id="hint">{{ exercise.hint }}</div>
+      </div>
+
+      <div class="exercise-section">
+        <input type="checkbox" id="files_option" />
+        <label for="files_option">Download the problem's files</label>
+        <div id="files">
+          <ul>
+            {% for link in exercise.files %}
+            <li><a href="{{ link }}" download>Download</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <form action="/submit_flag" method="post" class="exercise-section">
+        <label for="flag_input">Enter your flag:</label>
+        <input type="text" name="flag_input" required />
+        <input type="submit" value="Submit your flag!" />
+      </form>
+    </div>
+  </body>
+</html>

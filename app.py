@@ -4,6 +4,9 @@ import secrets
 import sqlite3
 import bcrypt
 import redis
+from subprocess import Popen
+import threading
+import time
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = secrets.token_hex()
@@ -97,7 +100,30 @@ def file_request(filename):
 @app.route("/request_server", methods=["POST"])
 def request_server():
     # TODO: start server with port not taken, authenticate the request with session info, set timer to close
-    pass
+
+    exercise = request.json["exercise"]
+
+    # filter user input
+    try:
+        exercise = int(exercise)
+    except:
+        return jsonify({"error": "Invalid exercise id"}), 400
+
+    # get path
+    path = os.listdir("gym_resources")[exercise - 1]
+
+    def target():
+        try:
+            process = Popen(["python", f"gym_resources/{path}/app.py"])
+            process.wait(600)  # 10 mins
+            if process.poll() is None:
+                process.terminate()
+        except:
+            return jsonify({"error": "Bad exercise request"}), 400
+
+    thread = threading.Thread(target=target)
+    thread.start()
+    return jsonify({"success": "Server started"}), 200
 
 
 # if logged in, return id, otherwise false
@@ -136,7 +162,7 @@ def probdone():
     if not is_logged_in():
         return jsonify({"error": "Not logged in"}), 401
 
-    # sanitize user input
+    # filter user input
     try:
         prob_id = int(prob_id)
     except:
@@ -156,6 +182,7 @@ def probdone():
     connection.executescript(
         f"UPDATE users SET completedproblems = '{str(probs)}' WHERE id={redis_client.get(session.get('token'))}"
     )
+    # TODO: add points
     connection.commit()
     connection.close()
     return ""

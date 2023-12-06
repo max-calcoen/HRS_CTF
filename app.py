@@ -99,8 +99,6 @@ def file_request(filename):
 
 @app.route("/request_server", methods=["POST"])
 def request_server():
-    # TODO: start server with port not taken, authenticate the request with session info, set timer to close
-
     exercise = request.json["exercise"]
 
     # filter user input

@@ -88,7 +88,7 @@ def login():
     return jsonify({"error": "Incorrect username or password"}), 401
 
 
-@app.route("/file_request/<path:filename>", methods=["POST"])
+@app.route("/file_request/<path:filename>", methods=["GET"])
 def file_request(filename):
     uploads = os.path.join(current_app.root_path, "server_resources")
     file_path = os.path.join(uploads, filename)

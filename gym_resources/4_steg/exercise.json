@@ -1,8 +1,8 @@
 {
-  "name": "TODO:",
+  "name": "Looks Can Be Deceiving",
   "description": "TODO",
-  "points": 10,
-  "hints": ["TODO"],
+  "points": 30,
+  "hints": ["Kys"],
   "hasServer": false,
-  "flag": "TODO"
+  "flag": "hrsCTF{y33h4w}"
 }

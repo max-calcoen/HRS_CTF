@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login Page</title>
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+  <body>
+    <div class="content-container">
+      <form action="/signup" method="GET" id="signinform">
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          id="username"
+          minlength="6"
+          maxlength="15"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          id="password"
+          minlength="8"
+          maxlength="20"
+          required
+        />
+        <input type="submit" value="Sign Up" />
+      </form>
+    </div>
+    <script>
+      window.onload = () => {
+        document
+          .getElementById("signinform")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            let res = await fetch("/signup", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value,
+              }),
+            });
+            let d = await res.json();
+            console.log(d);
+            if (res.status == 200) {
+              alert(`Welcome, ${document.getElementById("username").value}`);
+              window.location.href = "/";
+            } else if (res.status == 401) {
+              alert("Incorrect username or password!");
+            }
+          });
+      };
+    </script>
+  </body>
+</html>

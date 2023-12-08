@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Leaderboard Page</title>
+    <style type="type/css">
+      body.leaderboardContainer {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 80%;
+        max-width: 600px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        background-color: white;
+        border: 2px solid #4285f4;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 8px;
+      }
+
+      th {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      tr:hover {
+        background-color: #ddd;
+      }
+
+      td {
+        border-bottom: 1px solid #ddd;
+      }
+    </style>
+  </head>
+
+  <body class="leaderboardContainer">
+    <table>
+      <thead>
+        <th>Ranking</th>
+        <th>Player</th>
+        <th>Problems Solved</th>
+      </thead>
+      <!-- add new row for each new player, in sorted order (sort by amt of problems solved?)-->
+      {% for playerInfo in sorted_players %}
+      <tr>
+        <td>{{playerInfo.rank}}</td>
+        <td>{{playerInfo.username}}</td>
+        <td>{{playerInfo.solvedAmount}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>

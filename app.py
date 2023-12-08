@@ -6,7 +6,7 @@ import bcrypt
 import redis
 from subprocess import Popen
 import threading
-import time
+import json
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = secrets.token_hex()
@@ -17,10 +17,46 @@ redis_client = redis.StrictRedis(
 )
 
 
+# if logged in, return id, otherwise false
+def is_logged_in():
+    global redis_client
+    session_token = session.get("token")
+    # check if token exists and matches session cache
+    return (
+        redis_client.get(session_token)
+        if session_token is not None and redis_client.get(session_token) is not None
+        else False
+    )
+
+
 # index.html override
 @app.route("/")
 def home():
-    return send_from_directory("static", "index.html")
+    # get username from session cache
+    if not is_logged_in():
+        return render_template("index.html")
+    user_id = redis_client.get(session.get("token"))
+    # get username from database
+    connection = sqlite3.connect("users.sqlite")
+    cursor = connection.cursor()
+    cursor.execute("SELECT username FROM users WHERE id = ?", (user_id,))
+    username = cursor.fetchone()[0]
+    connection.close()
+    return render_template("index.html", username=username)
+
+
+@app.route("/signin")
+def signin():
+    if is_logged_in():
+        return redirect("/")
+    return send_from_directory("static", "signin.html")
+
+
+@app.route("/signup")
+def get_signup():
+    if is_logged_in():
+        return redirect("/")
+    return send_from_directory("static", "signup.html")
 
 
 @app.route("/signup", methods=["POST"])
@@ -30,13 +66,18 @@ def signup():
     if "username" in session:
         return jsonify({"error": "User is already signed in"}), 400
     # filter user input
-    if len(request.form["username"]) < 6 or len(request.form["password"]) < 8:
+    if (
+        len(request.json["username"]) < 6
+        or len(request.json["username"]) > 15
+        or len(request.json["password"]) < 8
+        or len(request.json["password"]) > 20
+    ):
         return jsonify({"error": "Bad username or password"}), 400
 
     connection = sqlite3.connect("users.sqlite")
     cursor = connection.cursor()
     cursor.execute(
-        "SELECT * FROM users WHERE username = ?", (request.form["username"],)
+        "SELECT * FROM users WHERE username = ?", (request.json["username"],)
     )
     user = cursor.fetchone()
     if user is not None:
@@ -44,17 +85,24 @@ def signup():
         return jsonify({"error": "User already exists"}), 400
 
     hashed_password = bcrypt.hashpw(
-        request.form["password"].encode("utf-8"), bcrypt.gensalt()
+        request.json["password"].encode("utf-8"), bcrypt.gensalt()
     )
     cursor.execute(
-        "INSERT INTO users (username, password) VALUES (?, ?)",
-        (request.form["username"], hashed_password),
+        "INSERT INTO users (username, passhash) VALUES (?, ?)",
+        (request.json["username"], hashed_password),
     )
     connection.commit()
+    # get user id
+    cursor.execute(
+        "SELECT id FROM users WHERE username = ?", (request.json["username"],)
+    )
+    user = cursor.fetchone()[0]
+
     connection.close()
     session_token = os.urandom(24).hex()
     redis_client.set(session_token, user[0])
     session["token"] = session_token
+    print(session_token, user[0])
     # user successfully created account, display home page
     return redirect("/")
 
@@ -64,20 +112,21 @@ def login():
     connection = sqlite3.connect("users.sqlite")
     cursor = connection.cursor()
     cursor.execute(
-        "SELECT * FROM users WHERE username = ?", (request.form["username"],)
+        "SELECT * FROM users WHERE username = ?", (request.json["username"],)
     )
     # check if user exists
     user = cursor.fetchone()
     if user is None:
         # dummy check to equalize response time (prevent timing attack)
         bcrypt.checkpw(
-            request.form["password"].encode("utf-8"), "dummy".encode("utf-8")
+            request.json["password"].encode("utf-8"),
+            b"$2b$12$eUhSqBS3J/ZqoZFZW/iOWe/P7JlBybwNDIZTbflwUajSqr0d6vlce",
         )
         connection.close()
         return jsonify({"error": "Incorrect username or password"}), 401
 
     if bcrypt.checkpw(
-        request.form["password"].encode("utf-8"), user[2].encode("utf-8")
+        request.json["password"].encode("utf-8"), user[2].encode("utf-8")
     ):
         session_token = os.urandom(24).hex()
         redis_client.set(session_token, user[0])
@@ -88,12 +137,23 @@ def login():
     return jsonify({"error": "Incorrect username or password"}), 401
 
 
+@app.route("/signout", methods=["GET"])
+def signout():
+    global redis_client
+    session_token = session.get("token")
+    if session_token is None:
+        return jsonify({"error": "User is not signed in"}), 400
+    redis_client.delete(session_token)
+    session.pop("token", None)
+    return redirect("/")
+
+
 @app.route("/file_request/<path:filename>", methods=["GET"])
 def file_request(filename):
-    uploads = os.path.join(current_app.root_path, "server_resources")
+    uploads = os.path.join(current_app.root_path, "gym_resources")
     file_path = os.path.join(uploads, filename)
     if not os.path.exists(file_path):
-        return "File not found", 404
+        return jsonify({"error": "File not found"}), 404
     return send_from_directory(uploads, filename, as_attachment=True)
 
 
@@ -124,37 +184,72 @@ def request_server():
     return jsonify({"success": "Server started"}), 200
 
 
-# if logged in, return id, otherwise false
-def is_logged_in():
-    global redis_client
-    session_token = session.get("token")
-    # check if token exists and matches session cache
-    return (
-        redis_client.get(session_token)
-        if session_token is not None and redis_client.get(session_token) is not None
-        else False
-    )
-
-
 @app.route("/gym")
 def get_gym():
+    completed_ex = []
+    if is_logged_in():
+        connection = sqlite3.connect("users.sqlite")
+        cur = connection.cursor()
+        cur.execute(
+            "SELECT completedproblems FROM users WHERE id = ?",
+            (redis_client.get(session.get("token"))),
+        )
+        try:
+            completed_ex = [
+                int(prob) for prob in cur.fetchone()[0].strip("[]").split(",")
+            ]
+        except:
+            completed_ex = []
+        connection.close()
     # get gym data
-    if not is_logged_in():
-        return render_template("gym.html", [])
+    all_ex = []
+    for i, filename in enumerate(
+        sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))
+    ):
+        with open(f"gym_resources/{filename}/exercise.json", "r") as ex_file:
+            ex_dict = json.load(ex_file)
+            if i in completed_ex:
+                ex_dict["completed"] = True
+            else:
+                ex_dict["completed"] = False
+            all_ex.append(ex_dict)
+
+    # get username
+    user_id = redis_client.get(session.get("token"))
     connection = sqlite3.connect("users.sqlite")
     cur = connection.cursor()
-    cur.execute(
-        "SELECT completedproblems FROM users WHERE id = ?",
-        (redis_client.get(session.get("token"))),
-    )
-    probs = cur.fetchone()
+    cur.execute("SELECT username FROM users WHERE id = ?", (user_id,))
+    uname = cur.fetchone()[0]
     connection.close()
-    probs = [int(prob) for prob in probs[0].split(",")]
-    print(probs)
-    return render_template("gym.html", probs)
+    uname = "Welcome, " + uname
+    if is_logged_in():
+        return render_template("gym.html", uname=uname, exercises=all_ex)
+    else:
+        return render_template("gym.html", exercises=all_ex)
+
+
+@app.route("/exercise/<path:ex_id>")
+def get_exercise(ex_id):
+    # filter user input
+    try:
+        ex_id = int(ex_id)
+    except:
+        return jsonify({"error": "Invalid exercise id"}), 400
+
+    # get gym data
+    if ex_id > len(os.listdir("gym_resources")):
+        return jsonify({"error": "Invalid exercise id"}), 400
+
+    with open(
+        f"gym_resources/{sorted(os.listdir('gym_resources'), key=lambda x: int(x[0]))[ex_id - 1]}/exercise.json",
+        "r",
+    ) as ex_file:
+        ex_dict = json.load(ex_file)
+    return render_template("exercise.html", exercise=ex_dict)
 
 
 @app.route("/probdone", methods=["POST"])
+# TODO: change to function, not route- only call when answer submitted
 def probdone():
     prob_id = request.form["prob_id"]
     if not is_logged_in():
@@ -165,25 +260,45 @@ def probdone():
         prob_id = int(prob_id)
     except:
         return jsonify({"error": "Invalid problem id"}), 400
+
+    if prob_id > len(os.listdir("gym_resources")):
+        return jsonify({"error": "Invalid problem id"}), 400
+
+    # connect to db
     connection = sqlite3.connect("users.sqlite")
     cur = connection.cursor()
+    # get user info
     cur.execute(
-        "SELECT completedproblems FROM users WHERE id = ?",
+        "SELECT completedproblems, gympoints FROM users WHERE id = ?",
         (redis_client.get(session.get("token"))),
     )
-    probs = cur.fetchone()[0].strip("[]").split(", ")
+    db_res = cur.fetchone()
+    probs = db_res[0].strip("[]").split(", ")
+    # parse: len 0 will return []
     try:
         probs = [int(prob) for prob in probs]
     except:
         probs = []
+    if prob_id in probs:
+        return jsonify({"error": "Problem already completed"}), 400
+    # add problem to problems
     probs.append(int(prob_id))
+    # get curr amount of points
+    curr_pts = int(db_res[1])
+    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
+        prob_id - 1
+    ]
+    with open(
+        f"gym_resources/{resource_folder_path}/exercise.json", "r"
+    ) as points_file:
+        points = json.load(points_file)["points"]
+    # update db: add points, mark completed problem
     connection.executescript(
-        f"UPDATE users SET completedproblems = '{str(probs)}' WHERE id={redis_client.get(session.get('token'))}"
+        f"UPDATE users SET completedproblems = '{probs}', gympoints = {curr_pts + points} WHERE id={redis_client.get(session.get('token'))}"
     )
-    # TODO: add points
     connection.commit()
     connection.close()
-    return ""
+    return jsonify({"success": "Problem added"}), 200
 
 
 if __name__ == "__main__":

@@ -2,28 +2,10 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.login-container {
+.content-container {
     width: 300px;
     margin: 100px auto;
     text-align: center;
-}
-
-
-.google-btn button {
-    background-color: #4285F4;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.google-btn button:hover {
-    background-color: #357ae8;
-}
-
-.divider {
-    margin: 20px 0;
 }
 
 form input {
@@ -37,7 +19,7 @@ form input {
 form button {
     padding: 10px 15px;
     width: 100%;
-    background-color: #4CAF50;
+    background-color: #4caf50;
     color: white;
     border: none;
     border-radius: 5px;

@@ -6,6 +6,12 @@
     <title>Index</title>
   </head>
   <body>
-    index!
+    {% if username %}
+    <p>Welcome, {{username}}!</p>
+    <a href="/signout">Sign Out</a>
+    {% else %}
+    <p><a href="/signin">Sign In</a></p>
+    <p><a href="/signup.html">Sign Up</a></p>
+    {% endif %}
   </body>
 </html>

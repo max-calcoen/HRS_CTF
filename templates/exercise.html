@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>X: {{exercise.title}}</title>
+    <style type="text/css">
+      .exerciseContainer {
+        font-family: Arial, sans-serif;
+        background-color: #76c7f6;
+        padding: 20px;
+      }
+
+      .exercise-content {
+        background-color: white;
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(92, 80, 80, 0.2);
+      }
+
+      .exercise-title {
+        color: #333;
+        text-align: center;
+      }
+
+      .exercise-points {
+        text-align: center;
+        color: #666;
+        font-size: 1.4em;
+        margin-bottom: 20px;
+      }
+
+      .exercise-section {
+        margin-bottom: 20px;
+      }
+
+      #hint,
+      #files {
+        display: none;
+        padding: 10px;
+        background-color: #eee;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+
+      #hint_option:checked ~ #hint,
+      #files_option:checked ~ #files {
+        display: block;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      input[type="submit"] {
+        background-color: #057c09;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body class="exerciseContainer">
+    <div class="exercise-content">
+      <h1 class="exercise-title">{{ exercise.name }}</h1>
+      <div class="exercise-points">{{ exercise.points }} points</div>
+
+      <div class="exercise-section">
+        <p>{{ exercise.description|safe }}</p>
+      </div>
+
+      <div class="exercise-section">
+        {% for hint in exercise.hints %}
+        <input type="checkbox" id="hint_option" />
+        <label for="hint_option">Reveal Hint</label>
+        <div id="hint">{{ hint }}</div>
+        {% endfor %}
+      </div>
+
+      <form action="/submit_flag" method="post" class="exercise-section">
+        <label for="flag_input">Enter your flag:</label>
+        <input type="text" name="flag_input" required />
+        <input type="submit" value="Submit your flag!" />
+      </form>
+    </div>
+  </body>
+</html>

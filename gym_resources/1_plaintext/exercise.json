@@ -1,6 +1,6 @@
 {
   "name": "plaintext",
-  "description": "this flag is hidden in plain sight <a href='/file_request/2_caesar/flag.txt'>download</a>",
+  "description": "this flag is hidden in <a href='/file_request/1_plaintext/flag'>plain sight</a>",
   "points": 10,
   "hints": ["Download the file and open it to find the flag"],
   "hasServer": false,

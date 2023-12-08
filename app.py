@@ -100,11 +100,10 @@ def signup():
 
     connection.close()
     session_token = os.urandom(24).hex()
-    redis_client.set(session_token, user[0])
+    redis_client.set(session_token, user)
     session["token"] = session_token
-    print(session_token, user[0])
     # user successfully created account, display home page
-    return redirect("/")
+    return jsonify({"success": "User created successfully"}), 200
 
 
 @app.route("/signin", methods=["POST"])

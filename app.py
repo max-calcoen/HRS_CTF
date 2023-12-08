@@ -124,9 +124,7 @@ def login():
         connection.close()
         return jsonify({"error": "Incorrect username or password"}), 401
 
-    if bcrypt.checkpw(
-        request.json["password"].encode("utf-8"), user[2].encode("utf-8")
-    ):
+    if bcrypt.checkpw(request.json["password"].encode("utf-8"), user[2]):
         session_token = os.urandom(24).hex()
         redis_client.set(session_token, user[0])
         session["token"] = session_token

@@ -1,3 +1,5 @@
+# TODO: normal "ex_id" and "prob_id"
+
 import os
 from flask import Flask, current_app, send_from_directory, session, request, jsonify, redirect, render_template  # type: ignore
 import secrets
@@ -39,10 +41,12 @@ def home():
     # get username from database
     connection = sqlite3.connect("users.sqlite")
     cursor = connection.cursor()
-    cursor.execute("SELECT username FROM users WHERE id = ?", (user_id,))
-    username = cursor.fetchone()[0]
+    cursor.execute("SELECT username, gympoints FROM users WHERE id = ?", (user_id,))
+    res = cursor.fetchone()
+    username = res[0]
+    points = res[1]
     connection.close()
-    return render_template("index.html", username=username)
+    return render_template("index.html", username=username, points=points)
 
 
 @app.route("/signin")
@@ -205,22 +209,25 @@ def get_gym():
     ):
         with open(f"gym_resources/{filename}/exercise.json", "r") as ex_file:
             ex_dict = json.load(ex_file)
-            if i in completed_ex:
+            if i + 1 in completed_ex:
                 ex_dict["completed"] = True
             else:
                 ex_dict["completed"] = False
             all_ex.append(ex_dict)
 
-    # get username
-    user_id = redis_client.get(session.get("token"))
-    connection = sqlite3.connect("users.sqlite")
-    cur = connection.cursor()
-    cur.execute("SELECT username FROM users WHERE id = ?", (user_id,))
-    uname = cur.fetchone()[0]
-    connection.close()
-    uname = "Welcome, " + uname
     if is_logged_in():
-        return render_template("gym.html", uname=uname, exercises=all_ex)
+        # get username and points
+        user_id = redis_client.get(session.get("token"))
+        connection = sqlite3.connect("users.sqlite")
+        cur = connection.cursor()
+        cur.execute("SELECT username, gympoints FROM users WHERE id = ?", (user_id,))
+        res = cur.fetchone()
+        username = res[0]
+        points = res[1]
+        connection.close()
+        return render_template(
+            "gym.html", uname=username, exercises=all_ex, points=points
+        )
     else:
         return render_template("gym.html", exercises=all_ex)
 
@@ -242,32 +249,43 @@ def get_exercise(ex_id):
         "r",
     ) as ex_file:
         ex_dict = json.load(ex_file)
+        ex_dict["prob_id"] = ex_id
     return render_template("exercise.html", exercise=ex_dict)
 
 
-@app.route("/probdone", methods=["POST"])
-# TODO: change to function, not route- only call when answer submitted
-def probdone():
-    prob_id = request.form["prob_id"]
-    if not is_logged_in():
-        return jsonify({"error": "Not logged in"}), 401
-
+@app.route("/flag", methods=["POST"])
+def submit_flag():
     # filter user input
     try:
-        prob_id = int(prob_id)
+        prob_id = int(request.json["prob_id"])
+        # TODO: .DS_Store check
+        if prob_id > len(os.listdir("gym_resources")):
+            raise ""
     except:
-        return jsonify({"error": "Invalid problem id"}), 400
+        return jsonify({"error": "invalid problem id"}), 400
 
-    if prob_id > len(os.listdir("gym_resources")):
-        return jsonify({"error": "Invalid problem id"}), 400
+    # get exercise file from gym_resources
+    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
+        prob_id - 1
+    ]
+    with open(f"gym_resources/{resource_folder_path}/exercise.json", "r") as ex_file:
+        ex_dict = json.load(ex_file)
+    if ex_dict["flag"] == request.json["flag"]:
+        if handle_completed_ex(prob_id, redis_client.get(session.get("token"))):
+            return jsonify({"success": "flag correct!"}), 200
+        else:
+            return jsonify({"error": "problem already completed!"}), 400
+    return jsonify({"error": "Flag incorrect!"}), 400
 
+
+def handle_completed_ex(prob_id, user_id):
     # connect to db
     connection = sqlite3.connect("users.sqlite")
     cur = connection.cursor()
     # get user info
     cur.execute(
         "SELECT completedproblems, gympoints FROM users WHERE id = ?",
-        (redis_client.get(session.get("token"))),
+        (user_id),
     )
     db_res = cur.fetchone()
     probs = db_res[0].strip("[]").split(", ")
@@ -276,12 +294,14 @@ def probdone():
         probs = [int(prob) for prob in probs]
     except:
         probs = []
+    # prob already completed
     if prob_id in probs:
-        return jsonify({"error": "Problem already completed"}), 400
+        return False
     # add problem to problems
     probs.append(int(prob_id))
     # get curr amount of points
     curr_pts = int(db_res[1])
+    # TODO: .DS_Store check
     resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
         prob_id - 1
     ]
@@ -295,7 +315,7 @@ def probdone():
     )
     connection.commit()
     connection.close()
-    return jsonify({"success": "Problem added"}), 200
+    return True
 
 
 if __name__ == "__main__":

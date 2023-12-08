@@ -1,8 +1,0 @@
-{
-  "name": "Caesar",
-  "description": "13 is my favorite number! <a href='/file_request/1_plaintext/flag.txt'>download</a>",
-  "points": 10,
-  "hints": ["Try shifting each letter by 13"],
-  "hasServer": false,
-  "flag": "hrsCTF{h3llo_w0rld}"
-}

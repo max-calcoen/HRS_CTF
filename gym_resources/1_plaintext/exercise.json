@@ -1,8 +1,0 @@
-{
-  "name": "plaintext",
-  "description": "this flag is hidden in <a href='/file_request/1_plaintext/flag'>plain sight</a>",
-  "points": 10,
-  "hints": ["Download the file and open it to find the flag"],
-  "hasServer": false,
-  "flag": "hrsCTF{s4n1ty_v3r1f13d_b5aeb3dd}"
-}

@@ -1,0 +1,8 @@
+{
+  "name": "winner winner chicken dinner",
+  "description": "get on the leaderboard to get a special reward! (the flag)",
+  "points": 100,
+  "hints": ["TODO"],
+  "hasServer": false,
+  "flag": "TODO"
+}

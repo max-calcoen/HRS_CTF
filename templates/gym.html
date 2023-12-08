@@ -24,7 +24,7 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
 
-      a {
+      a.basic {
         color: black;
         text-decoration: none;
       }
@@ -43,10 +43,15 @@
     </style>
   </head>
   <body>
-    <p>{{uname}}</p>
+    {% if uname %}
+      <p>welcome, {{uname}}</p>
+      <p>points: {{points}}</p>
+    {% else %}
+      <p>sign up <a href="/signup">here</a> (or <a href="/signin">sign in</a>) to save your progress!</p>
+    {% endif %}
     <div class="gym-container">
       {% for exercise in exercises %}
-        <a href="exercise/{{loop.index}}">
+        <a href="exercise/{{loop.index}}" class="basic">
         {% if exercise.completed %}
           <div class="exercise-card completed">
         {% else %}

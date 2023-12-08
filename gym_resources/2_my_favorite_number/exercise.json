@@ -1,0 +1,11 @@
+{
+  "name": "my favorite number",
+  "description": "13 is my favorite number! <a href='/file_request/2_my_favorite_number/encrypted'>download</a>",
+  "points": 10,
+  "hints": [
+    "try shifting each letter by 13",
+    "maybe <a href='https://rot13.com/'> this tool </a> can help?"
+  ],
+  "hasServer": false,
+  "flag": "hrsCTF{3mp0r3r_jul1us}"
+}

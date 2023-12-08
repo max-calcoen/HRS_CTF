@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>X: {{exercise.title}}</title>
+    <title>X: {{exercise.name}}</title>
     <style type="text/css">
-      .exerciseContainer {
+      body {
         font-family: Arial, sans-serif;
         background-color: #76c7f6;
         padding: 20px;
+      }
+      data:hover::after {
+        content: " (ID: " attr(value) ")";
+        font-size: 0.7em;
       }
 
       .exercise-content {
@@ -34,18 +38,12 @@
         margin-bottom: 20px;
       }
 
-      #hint,
-      #files {
+      .hint {
         display: none;
         padding: 10px;
         background-color: #eee;
         border-radius: 5px;
-        margin-top: 10px;
-      }
-
-      #hint_option:checked ~ #hint,
-      #files_option:checked ~ #files {
-        display: block;
+        margin: 10px;
       }
 
       input[type="text"] {
@@ -70,30 +68,151 @@
       input[type="submit"]:hover {
         background-color: #45a049;
       }
+
+      .hintwrapper {
+        display: block;
+      }
+
+      #confetti-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 9999;
+      }
+
+      .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 15px;
+        background-color: #f0f;
+        opacity: 0.7;
+        animation: fall linear forwards;
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(500px) rotate(360deg);
+          opacity: 0;
+        }
+      }
     </style>
   </head>
-  <body class="exerciseContainer">
+  <body>
+    <div id="confetti-container"></div>
     <div class="exercise-content">
-      <h1 class="exercise-title">{{ exercise.name }}</h1>
+      <h1 class="exercise-title">
+        <data id="prob_id" value="{{exercise.prob_id}}"
+          >{{ exercise.name }}</data
+        >
+      </h1>
       <div class="exercise-points">{{ exercise.points }} points</div>
 
       <div class="exercise-section">
         <p>{{ exercise.description|safe }}</p>
       </div>
-
-      <div class="exercise-section">
+      <form class="exercise-section" action="">
         {% for hint in exercise.hints %}
-        <input type="checkbox" id="hint_option" />
-        <label for="hint_option">Reveal Hint</label>
-        <div id="hint">{{ hint }}</div>
+        <div class="hintwrapper">
+          <input
+            type="checkbox"
+            class="hint_option"
+            id="hint_option{{ loop.index }}"
+          />
+          <label for="hint_option{{ loop.index }}">hint {{ loop.index }}</label>
+          <div class="hint" id="hint{{ loop.index }}">{{ hint |safe }}</div>
+        </div>
         {% endfor %}
-      </div>
-
-      <form action="/submit_flag" method="post" class="exercise-section">
-        <label for="flag_input">Enter your flag:</label>
-        <input type="text" name="flag_input" required />
-        <input type="submit" value="Submit your flag!" />
       </form>
+
+      <form action="" class="exercise-section" id="flagform">
+        <label for="flag_input">enter your flag</label>
+        <input
+          type="text"
+          name="flag_input"
+          id="flag"
+          placeholder="hrsCTF{..}"
+          required
+        />
+        <input type="submit" value="submit" />
+      </form>
+      <p><a href="/gym">return to gym</a></p>
     </div>
+    <script>
+      window.onload = () => {
+        document
+          .getElementById("flagform")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            let res = await fetch("/flag", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                flag: document.getElementById("flag").value,
+                prob_id: document.getElementById("prob_id").value,
+              }),
+            });
+
+            if ((await res.status) == 200) {
+              triggerConfetti();
+            } else {
+              // TODO: shake the box, turn red
+              let msg = await res.json();
+              alert(msg["error"]);
+            }
+          });
+      };
+      const hintCheckboxes = document.querySelectorAll(".hint_option");
+      hintCheckboxes.forEach((checkbox, index) => {
+        checkbox.addEventListener("change", () => {
+          const hintDiv = document.getElementById(`hint${index + 1}`);
+          if (checkbox.checked) {
+            hintDiv.style.display = "block";
+          } else {
+            hintDiv.style.display = "none";
+          }
+        });
+      });
+
+      function createConfettiPiece(x) {
+        const confettiPiece = document.createElement("div");
+        confettiPiece.classList.add("confetti-piece");
+        confettiPiece.style.left = `${x}px`;
+        confettiPiece.style.top = `${Math.random() * 400 - 200}px`; // random y position from -200 to 200
+        confettiPiece.style.backgroundColor =
+          "#" + Math.floor(Math.random() * 16777215).toString(16); // random color
+        confettiPiece.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+        // randomize anim duration for different falling speeds
+        const animationDuration = Math.random() * 3 + 2; // 2 to 5 seconds
+        confettiPiece.style.animation = `fall ${animationDuration}s linear forwards`;
+
+        document
+          .getElementById("confetti-container")
+          .appendChild(confettiPiece);
+
+        // remove confetti piece after anim ends
+        confettiPiece.addEventListener("animationend", () => {
+          confettiPiece.remove();
+        });
+      }
+
+      function triggerConfetti() {
+        const confettiContainer = document.getElementById("confetti-container");
+        const width = confettiContainer.offsetWidth;
+        for (let i = 0; i < 100; i++) {
+          createConfettiPiece(Math.random() * width);
+        }
+      }
+    </script>
   </body>
 </html>

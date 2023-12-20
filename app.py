@@ -260,22 +260,31 @@ def submit_flag():
         prob_id = int(request.json["prob_id"])
         # TODO: .DS_Store check
         if prob_id > len(os.listdir("gym_resources")):
-            raise ""
+            raise ValueError("Invalid problem id")
     except:
         return jsonify({"error": "invalid problem id"}), 400
 
+    session_token = session.get("token")
+    if session_token is None:
+        return jsonify({"error": "session token missing"}), 400
+
+    # make sure user actually signed in
+    user_id = redis_client.get(session_token)
+    if user_id is None:
+        return jsonify({"error": "invalid session token"}), 400
+
     # get exercise file from gym_resources
-    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
-        prob_id - 1
-    ]
+    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[prob_id - 1]
     with open(f"gym_resources/{resource_folder_path}/exercise.json", "r") as ex_file:
         ex_dict = json.load(ex_file)
+
     if ex_dict["flag"] == request.json["flag"]:
-        if handle_completed_ex(prob_id, redis_client.get(session.get("token"))):
+        if handle_completed_ex(prob_id, user_id):
             return jsonify({"success": "flag correct!"}), 200
         else:
             return jsonify({"error": "problem already completed!"}), 400
     return jsonify({"error": "Flag incorrect!"}), 400
+
 
 
 def handle_completed_ex(prob_id, user_id):

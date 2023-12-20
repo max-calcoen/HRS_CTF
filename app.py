@@ -266,7 +266,7 @@ def submit_flag():
 
     session_token = session.get("token")
     if session_token is None:
-        return jsonify({"error": "session token missing"}), 400
+        return jsonify({"error": "Sign in to complete this problem!"}), 400
 
     # make sure user actually signed in
     user_id = redis_client.get(session_token)

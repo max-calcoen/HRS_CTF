@@ -1,8 +1,8 @@
 {
   "name": "Looks Can Be Deceiving",
-  "description": "TODO",
+  "description": "Color isn't the only thing infused into this image. Use a steganographic approach to decode the message hidden in the pixels. <a href='/file_request/gym_resources/4_steg/modified_image.png'>download</a>",
   "points": 30,
-  "hints": ["Kys"],
+  "hints": ["The last two bits of each pixel's color channel might say something...", "8 bits make a character"],
   "hasServer": false,
-  "flag": "hrsCTF{y33h4w}"
+  "flag": "hrsCTF{solv3d!}"
 }

@@ -4,16 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Index</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      #background {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background-color: #76c7f6;
+        overflow: hidden;
+        z-index: -1;
+      }
+
+      .digit {
+        position: absolute;
+        color: rgba(255, 255, 255, 0.5);
+        font-family: "Courier New", monospace;
+        font-size: 60px;
+        font-weight: bold;
+      }
+
+      .content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        position: relative;
+        z-index: 1;
+      }
+
+      .centered-content {
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
-    {% if username %}
-    <p>welcome, {{username}}!</p>
-    <p>points: {{points}}</p>
-    <a href="/signout">Sign Out</a>
-    {% else %}
-    <p><a href="/signin">sign in</a></p>
-    <p><a href="/signup.html">sign up</a></p>
-    {% endif %}
-    <p><a href="/gym">gym</a></p>
+    <div id="background"></div>
+
+    <div class="content">
+      <div class="centered-content">
+        {% if username %}
+        <p>welcome, {{username}}!</p>
+        <p>points: {{points}}</p>
+        <a href="/signout">Sign Out</a>
+        {% else %}
+        <p><a href="/signin">sign in</a></p>
+        <p><a href="/signup.html">sign up</a></p>
+        {% endif %}
+        <p><a href="/gym">gym</a></p>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const background = document.getElementById("background");
+        const numDigits = 50; // amt of digits to display
+
+        for (let i = 0; i < numDigits; i++) {
+          let digit = document.createElement("div");
+          digit.classList.add("digit");
+          digit.textContent = Math.random() < 0.5 ? "0" : "1"; // randomly choose between displaying 0s or 1s
+
+          background.appendChild(digit); // display the digit on the background
+          animateDigit(digit); // add some movement
+        }
+
+        function animateDigit(digit) {
+          digit.style.left = Math.random() * window.innerWidth + "px"; // set random x position
+          digit.style.top = Math.random() * window.innerHeight + "px"; // set random y position
+
+          moveDigit(digit);
+
+          // repeat animation
+          setInterval(() => {
+            moveDigit(digit);
+          }, (Math.random() * 1 + 1) * 1000); // different duration per interval
+        }
+
+        function moveDigit(digit) {
+          let moveDuration = Math.random() * 5 + 7; // min duration of 7 seconds, max of 12
+          digit.style.transition = `transform ${moveDuration}s linear`; // update transformation duration
+          digit.style.transform = `translateY(${
+            Math.random() < 0.5 ? "-" : "" // randomly assign up or down movement
+          }${window.innerHeight}px)`;
+        }
+      });
+    </script>
   </body>
 </html>

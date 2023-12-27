@@ -4,7 +4,7 @@ import os
 from flask import Flask, current_app, send_from_directory, session, request, jsonify, redirect, render_template  # type: ignore
 import secrets
 import sqlite3
-import bcrypt 
+import bcrypt
 import redis
 from subprocess import Popen
 import threading
@@ -274,7 +274,9 @@ def submit_flag():
         return jsonify({"error": "invalid session token"}), 400
 
     # get exercise file from gym_resources
-    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[prob_id - 1]
+    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
+        prob_id - 1
+    ]
     with open(f"gym_resources/{resource_folder_path}/exercise.json", "r") as ex_file:
         ex_dict = json.load(ex_file)
 
@@ -284,7 +286,6 @@ def submit_flag():
         else:
             return jsonify({"error": "problem already completed!"}), 400
     return jsonify({"error": "Flag incorrect!"}), 400
-
 
 
 def handle_completed_ex(prob_id, user_id):

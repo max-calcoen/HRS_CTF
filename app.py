@@ -151,6 +151,8 @@ def signout():
 
 @app.route("/file_request/<path:filename>", methods=["GET"])
 def file_request(filename):
+    if "exercise.json" in filename:
+        return jsonify({"error": "Bad request"}), 400
     uploads = os.path.join(current_app.root_path, "gym_resources")
     file_path = os.path.join(uploads, filename)
     if not os.path.exists(file_path):

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>super secure portal</title>
+    <style type="text/css">
+      body {
+        font-family: "Comic Sans MS", "Comic Sans", cursive;
+        background-color: #f0e;
+        color: #0ff;
+        text-align: center;
+      }
+
+      input[type="password"],
+      input[type="submit"] {
+        font-size: 20px;
+        color: #ff0;
+        background-color: #00f;
+        border: 3px dashed red;
+        margin: 10px;
+      }
+
+      input[type="password"] {
+        width: 80%;
+        padding: 20px;
+      }
+
+      input[type="submit"] {
+        cursor: pointer;
+        transform: rotate(-10deg);
+        border-radius: 50%;
+      }
+
+      p {
+        font-size: 30px;
+        color: #0f0;
+        text-shadow: 2px 2px 5px #f00;
+      }
+    </style>
+  </head>
+  <body>
+    <p>enter the secret password to get into my super secure portal!!!</p>
+    <form action="#" id="mainform">
+      <input type="password" name="pass" id="pass" placeholder="password" />
+      <input type="submit" />
+    </form>
+    <script>
+      window.onload = () => {
+        document.getElementById("mainform").onsubmit = (e) => {
+          e.preventDefault();
+          let checkpass = document.getElementById("pass").value;
+          let split = 4;
+          if (checkpass.substring(0, split) == "hrsC") {
+            if (checkpass.substring(split * 6, split * 7) == "0rd1") {
+              if (checkpass.substring(split, split * 2) == "TF{s") {
+                if (checkpass.substring(split * 4, split * 5) == "et_p") {
+                  if (checkpass.substring(split * 3, split * 4) == "secr") {
+                    if (checkpass.substring(split * 5, split * 6) == "assw") {
+                      if (checkpass.substring(split * 2, split * 3) == "uper") {
+                        if (
+                          checkpass.substring(split * 7, split * 8) == "322}"
+                        ) {
+                          alert("Password Verified");
+                          return;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          alert("Incorrect password");
+        };
+      };
+    </script>
+  </body>
+</html>

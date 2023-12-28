@@ -7,5 +7,5 @@
     "i wonder if converting M to base 256 could be useful?"
   ],
   "hasServer": false,
-  "flag": "hrsCTF{sha256_b3tt3r_138923}"
+  "flag": "hrsCTF{caesar_b3tt3r_138923}"
 }

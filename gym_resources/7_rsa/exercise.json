@@ -6,6 +6,6 @@
     "128 bits is a bit much... or is it?",
     "i wonder if converting M to base 256 could be useful?"
   ],
-  "hasServer": false,
+  "hasDocker": false,
   "flag": "hrsCTF{caesar_b3tt3r_138923}"
 }

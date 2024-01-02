@@ -1,8 +1,10 @@
 {
-  "name": "TODO:",
-  "description": "TODO",
+  "name": "sql injection",
+  "description": "how do ",
   "points": 10,
-  "hints": ["TODO"],
-  "hasServer": false,
+  "hints": [
+    "what's scary about this line? cursor.execute(request.form[\"query\"])"
+  ],
+  "hasDocker": true,
   "flag": "TODO"
 }

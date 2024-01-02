@@ -6,6 +6,6 @@
     "maybe taking a look at the source code can help?",
     "try using the inspect element of your browser (google how to access)"
   ],
-  "hasServer": false,
+  "hasDocker": false,
   "flag": "hrsCTF{supersecret_passw0rd1322}"
 }

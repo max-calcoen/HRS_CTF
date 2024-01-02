@@ -160,6 +160,8 @@ def file_request(filename):
     return send_from_directory(uploads, filename, as_attachment=True)
 
 
+# TODO: instead of requesting server, user now requests a container and server should deploy
+# NOTE: how do i protect user from spamming docker containers?
 @app.route("/request_server", methods=["POST"])
 def request_server():
     exercise = request.json["exercise"]

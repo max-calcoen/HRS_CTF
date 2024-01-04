@@ -1,25 +1,25 @@
 # TODO: user gets no feedback when trying to make account with taken username
 
+import atexit
+import json
 import os
+import secrets
+import socket
+import sqlite3
+
+import bcrypt
+import docker
+import redis
 from flask import (
     Flask,
     current_app,
-    send_from_directory,
-    session,
-    request,
     jsonify,
     redirect,
     render_template,
+    request,
+    send_from_directory,
+    session,
 )
-import secrets
-import sqlite3
-import bcrypt
-import redis
-import json
-import atexit
-import socket
-import docker
-
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = secrets.token_hex()
@@ -27,13 +27,11 @@ app.secret_key = secrets.token_hex()
 
 # TODO: configure persistence
 # connect to redis
-redis_client = redis.StrictRedis(
-    host="localhost", port=6379, db=0, decode_responses=True
-)
+redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
 SESSION_TIMEOUT = 3600  # 1 hr
 
-# Create a Docker client connected to the local Docker daemon
-client = docker.from_env()
+# create a Docker client connected to the local Docker daemon
+docker_client = docker.from_env()
 
 containers = {}
 
@@ -50,7 +48,6 @@ def is_logged_in():
     )
 
 
-# index.html override
 @app.route("/")
 def home():
     # get username from session cache
@@ -151,7 +148,7 @@ def login():
         session_token = os.urandom(24).hex()
         redis_client.set(session_token, user[0])
         session["token"] = session_token
-        # tell user when they're being logged out
+        # TODO: tell user when they're being logged out or disable expiration
         redis_client.setex(session_token, SESSION_TIMEOUT, user[0])
         connection.close()
         return jsonify({"success": "Login successful"}), 200
@@ -235,7 +232,7 @@ def request_container():
         open_port = s.getsockname()[1]  # Return the port number assigned.
 
     # start container
-    container = client.containers.run(
+    container = docker_client.containers.run(
         f"{image_name}:{image_tag}",
         name=f"user{user_id}-ex{ex_id}",
         volumes={

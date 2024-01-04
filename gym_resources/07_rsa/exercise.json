@@ -1,11 +1,11 @@
 {
   "name": "rsa",
-  "description": "in rsa, a small e value can be problematic, but what about a small n value? can you decrypt <a href='/file_request/7_rsa/values'>this</a>?",
+  "description": "in rsa, a small e value can be problematic, but what about a small n value? can you decrypt <a href='/file_request/7/values'>this</a>?",
   "points": 60,
   "hints": [
     "128 bits is a bit much... or is it?",
     "i wonder if converting M to base 256 could be useful?"
   ],
-  "hasDocker": false,
+  "hasContainer": false,
   "flag": "hrsCTF{caesar_b3tt3r_138923}"
 }

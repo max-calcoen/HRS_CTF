@@ -1,8 +1,8 @@
 {
   "name": "plain sight",
-  "description": "this flag is hidden in <a href='/file_request/1_plain_sight/flag'>plain sight</a>",
+  "description": "this flag is hidden in <a href='/file_request/1/flag'>plain sight</a>",
   "points": 10,
   "hints": ["download the file and open it to find the flag"],
-  "hasDocker": false,
+  "hasContainer": false,
   "flag": "hrsCTF{h3llo_w0rld}"
 }

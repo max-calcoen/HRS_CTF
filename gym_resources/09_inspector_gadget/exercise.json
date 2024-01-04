@@ -5,6 +5,6 @@
   "hints": [
     "open the inspect tool by right clicking and selecting 'inspect' (unless using safari)"
   ],
-  "hasDocker": false,
+  "hasContainer": false,
   "flag": "hrsCTF{thr0ghthes3w3rs}"
 }

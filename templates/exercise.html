@@ -118,6 +118,38 @@
       <div class="exercise-section">
         <p>{{ exercise.description|safe }}</p>
       </div>
+      {% if exercise.hasContainer %}
+      <div>
+        <button id="containerButton">toggle problem instance</button>
+        <p id="status"></p>
+      </div>
+      <script>
+        const handleButton = async () => {
+          // turn off button until fetch complete
+          let button = document.getElementById("containerButton");
+          button.onclick = null;
+          let res = await fetch("/request_container", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ ex_id: {{exercise.prob_id}} }),
+          });
+          let json = await res.json();
+          let ptag = document.getElementById("status");
+          if ((await res.status) == 400) ptag.innerHTML = json.error;
+          else ptag.innerHTML = json.success;
+        };
+        window.onload = document.getElementById("containerButton").onclick =
+          () => {
+            try {
+              handleButton();
+            } catch (e) {}
+            document.getElementById("containerButton").onclick = handleButton;
+          };
+      </script>
+      {% endif %}
       <form class="exercise-section" action="">
         {% for hint in exercise.hints %}
         <div class="hintwrapper">

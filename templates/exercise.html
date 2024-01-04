@@ -109,9 +109,7 @@
     <div id="confetti-container"></div>
     <div class="exercise-content">
       <h1 class="exercise-title">
-        <data id="prob_id" value="{{exercise.prob_id}}"
-          >{{ exercise.name }}</data
-        >
+        <data id="ex_id" value="{{exercise.ex_id}}">{{ exercise.name }}</data>
       </h1>
       <div class="exercise-points">{{ exercise.points }} points</div>
 
@@ -120,7 +118,7 @@
       </div>
       {% if exercise.hasContainer %}
       <div>
-        <button id="containerButton">toggle problem instance</button>
+        <button id="containerButton">toggle exercise instance</button>
         <p id="status"></p>
       </div>
       <script>
@@ -134,7 +132,7 @@
               "Content-Type": "application/json",
               Accept: "application/json",
             },
-            body: JSON.stringify({ ex_id: {{exercise.prob_id}} }),
+            body: JSON.stringify({ ex_id: {{exercise.ex_id}} }),
           });
           let json = await res.json();
           let ptag = document.getElementById("status");
@@ -190,7 +188,7 @@
               },
               body: JSON.stringify({
                 flag: document.getElementById("flag").value,
-                prob_id: document.getElementById("prob_id").value,
+                ex_id: document.getElementById("ex_id").value,
               }),
             });
 

@@ -3,7 +3,7 @@
   "description": "'Shifting' might be the key to decoding this: <a href='/file_request/3/encrypted'>download</a>",
   "points": 15,
   "hints": [
-    "What's the key to this problem?",
+    "What's the key to this exercise?",
     "Blaise de Vigenère was quite the cryptographer"
   ],
   "hasContainer": false,

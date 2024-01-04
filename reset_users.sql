@@ -4,5 +4,5 @@ CREATE TABLE users (
     username TEXT UNIQUE NOT NULL,
     passhash TEXT NOT NULL,
     gympoints INTEGER DEFAULT 0 NOT NULL,
-    completedproblems TEXT DEFAULT "[]"
+    completedexercises TEXT DEFAULT "[]"
 );

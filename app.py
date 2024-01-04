@@ -1,7 +1,5 @@
 # TODO: user gets no feedback when trying to make account with taken username
 
-# TODO: normalize "ex_id" and "prob_id"
-
 import os
 from flask import (
     Flask,
@@ -284,13 +282,11 @@ def get_gym():
         connection = sqlite3.connect("users.sqlite")
         cur = connection.cursor()
         cur.execute(
-            "SELECT completedproblems FROM users WHERE id = ?",
+            "SELECT completedexercise FROM users WHERE id = ?",
             (redis_client.get(session.get("token")),),
         )
         try:
-            completed_ex = [
-                int(prob) for prob in cur.fetchone()[0].strip("[]").split(",")
-            ]
+            completed_ex = [int(ex) for ex in cur.fetchone()[0].strip("[]").split(",")]
         except:
             completed_ex = []
         connection.close()
@@ -340,7 +336,7 @@ def get_exercise(ex_id):
         "r",
     ) as ex_file:
         ex_dict = json.load(ex_file)
-        ex_dict["prob_id"] = ex_id
+        ex_dict["ex_id"] = ex_id
     return render_template("exercise.html", exercise=ex_dict)
 
 
@@ -348,16 +344,16 @@ def get_exercise(ex_id):
 def submit_flag():
     # filter user input
     try:
-        prob_id = int(request.json["prob_id"])
+        ex_id = int(request.json["ex_id"])
         # TODO: .DS_Store check
-        if prob_id > len(os.listdir("gym_resources")):
-            raise ValueError("Invalid problem id")
+        if ex_id > len(os.listdir("gym_resources")):
+            raise ValueError("Invalid exercise id")
     except:
-        return jsonify({"error": "invalid problem id"}), 400
+        return jsonify({"error": "invalid exercise id"}), 400
 
     session_token = session.get("token")
     if session_token is None:
-        return jsonify({"error": "Sign in to complete this problem!"}), 400
+        return jsonify({"error": "Sign in to complete this exercise!"}), 400
 
     # make sure user actually signed in
     user_id = redis_client.get(session_token)
@@ -367,52 +363,52 @@ def submit_flag():
     # get exercise file from gym_resources
     resource_folder_path = sorted(
         os.listdir("gym_resources"), key=lambda x: int(x[0:2])
-    )[prob_id - 1]
+    )[ex_id - 1]
     with open(f"gym_resources/{resource_folder_path}/exercise.json", "r") as ex_file:
         ex_dict = json.load(ex_file)
 
     if ex_dict["flag"] == request.json["flag"]:
-        if handle_completed_ex(prob_id, user_id):
-            return jsonify({"success": "flag correct!"}), 200
+        if handle_completed_ex(ex_id, user_id):
+            return jsonify({"success": "Flag correct!"}), 200
         else:
-            return jsonify({"error": "problem already completed!"}), 400
+            return jsonify({"error": "Exercise already completed!"}), 400
     return jsonify({"error": "Flag incorrect!"}), 400
 
 
-def handle_completed_ex(prob_id, user_id):
+def handle_completed_ex(ex_id, user_id):
     # connect to db
     connection = sqlite3.connect("users.sqlite")
     cur = connection.cursor()
     # get user info
     cur.execute(
-        "SELECT completedproblems, gympoints FROM users WHERE id = ?",
+        "SELECT completedexercises, gympoints FROM users WHERE id = ?",
         (user_id),
     )
     db_res = cur.fetchone()
-    probs = db_res[0].strip("[]").split(", ")
+    exs = db_res[0].strip("[]").split(", ")
     # parse: len 0 will return []
     try:
-        probs = [int(prob) for prob in probs]
+        exs = [int(ex) for ex in exs]
     except:
-        probs = []
-    # prob already completed
-    if prob_id in probs:
+        exs = []
+    # ex already completed
+    if ex_id in exs:
         return False
-    # add problem to problems
-    probs.append(int(prob_id))
+    # add ex to exs
+    exs.append(int(ex_id))
     # get curr amount of points
     curr_pts = int(db_res[1])
     # TODO: .DS_Store check
     resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
-        prob_id - 1
+        ex_id - 1
     ]
     with open(
         f"gym_resources/{resource_folder_path}/exercise.json", "r"
     ) as points_file:
         points = json.load(points_file)["points"]
-    # update db: add points, mark completed problem
+    # update db: add points, mark completed ex
     connection.executescript(
-        f"UPDATE users SET completedproblems = '{probs}', gympoints = {curr_pts + points} WHERE id={redis_client.get(session.get('token'))}"
+        f"UPDATE users SET completedexercises = '{exs}', gympoints = {curr_pts + points} WHERE id={redis_client.get(session.get('token'))}"
     )
     connection.commit()
     connection.close()

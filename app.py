@@ -1,11 +1,14 @@
 # TODO: user gets no feedback when trying to make account with taken username
 
+import json
 import atexit
 import json
 import os
 import secrets
 import socket
 import sqlite3
+import threading
+from subprocess import Popen
 
 import bcrypt
 import docker
@@ -14,12 +17,13 @@ from flask import (
     Flask,
     current_app,
     jsonify,
-    redirect,
+    redirect,  # type: ignore
     render_template,
     request,
     send_from_directory,
     session,
 )
+from DatabaseManager import DatabaseManager
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = secrets.token_hex()
@@ -50,18 +54,15 @@ def is_logged_in():
 
 @app.route("/")
 def home():
+    global users_dbm
     # get username from session cache
     if not is_logged_in():
         return render_template("index.html")
     user_id = redis_client.get(session.get("token"))
     # get username from database
-    connection = sqlite3.connect("users.sqlite")
-    cursor = connection.cursor()
-    cursor.execute("SELECT username, gympoints FROM users WHERE id = ?", (user_id,))
-    res = cursor.fetchone()
-    username = res[0]
-    points = res[1]
-    connection.close()
+    user = users_dbm.get_user(user_id)
+    username = user.username
+    points = user.points
     return render_template("index.html", username=username, points=points)
 
 
@@ -275,18 +276,10 @@ def stop_container():
 @app.route("/gym")
 def get_gym():
     completed_ex = []
+    user_id = redis_client.get(session.get("token"))
+    user = users_dbm.get_user(user_id)
     if is_logged_in():
-        connection = sqlite3.connect("users.sqlite")
-        cur = connection.cursor()
-        cur.execute(
-            "SELECT completedexercise FROM users WHERE id = ?",
-            (redis_client.get(session.get("token")),),
-        )
-        try:
-            completed_ex = [int(ex) for ex in cur.fetchone()[0].strip("[]").split(",")]
-        except:
-            completed_ex = []
-        connection.close()
+        completed_ex = user.completed_ex
     # get gym data
     all_ex = []
     for i, filename in enumerate(
@@ -350,7 +343,7 @@ def submit_flag():
 
     session_token = session.get("token")
     if session_token is None:
-        return jsonify({"error": "Sign in to complete this exercise!"}), 400
+        return jsonify({"error": "sign in to complete this exercise!"}), 400
 
     # make sure user actually signed in
     user_id = redis_client.get(session_token)
@@ -373,42 +366,31 @@ def submit_flag():
 
 
 def handle_completed_ex(ex_id, user_id):
+    global users_dbm
     # connect to db
-    connection = sqlite3.connect("users.sqlite")
-    cur = connection.cursor()
-    # get user info
-    cur.execute(
-        "SELECT completedexercises, gympoints FROM users WHERE id = ?",
-        (user_id),
-    )
-    db_res = cur.fetchone()
-    exs = db_res[0].strip("[]").split(", ")
-    # parse: len 0 will return []
-    try:
-        exs = [int(ex) for ex in exs]
-    except:
-        exs = []
+    user = users_dbm.get_user(user_id)
+    exs = user.completed_ex
+    if not exs:
+        return False
     # ex already completed
     if ex_id in exs:
         return False
     # add ex to exs
     exs.append(int(ex_id))
     # get curr amount of points
-    curr_pts = int(db_res[1])
+    curr_pts = user.points
     # TODO: .DS_Store check
-    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
-        ex_id - 1
-    ]
+    resource_folder_path = sorted(
+        os.listdir("gym_resources"), key=lambda x: int(x[0:2])
+    )[ex_id - 1]
     with open(
         f"gym_resources/{resource_folder_path}/exercise.json", "r"
     ) as points_file:
         points = json.load(points_file)["points"]
     # update db: add points, mark completed ex
-    connection.executescript(
-        f"UPDATE users SET completedexercises = '{exs}', gympoints = {curr_pts + points} WHERE id={redis_client.get(session.get('token'))}"
-    )
-    connection.commit()
-    connection.close()
+    user.completed_ex.append(ex_id)
+    user.points += points
+    users_dbm.update_user(user)
     return True
 
 

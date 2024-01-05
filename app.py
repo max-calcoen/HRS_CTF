@@ -395,6 +395,30 @@ def handle_completed_ex(ex_id, user_id):
     return True
 
 
+@app.route("/leaderboard", methods=["GET"])
+def leaderboard():
+    # make sure user is signed in
+    session_token = session.get("token")
+    if session_token is None:
+        return jsonify({"error": "Sign in to view the leaderboard!"}), 400
+
+    # connect to db
+    connection = sqlite3.connect("users.sqlite")
+    cur = connection.cursor()
+
+    # get list of users sorted by gympoints
+    cur.execute("SELECT username, gympoints FROM users ORDER BY gympoints DESC")
+
+    users = cur.fetchall()
+
+    users_list = [
+        {"rank": i, "username": user[0], "gympoints": user[1]}
+        for i, user in enumerate(users)
+    ]
+    print(users_list)
+    return render_template("leaderboard.html", sorted_players=users_list)
+
+
 # remove containers on exit
 @atexit.register
 def goodbye():

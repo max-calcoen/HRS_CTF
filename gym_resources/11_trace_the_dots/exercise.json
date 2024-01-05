@@ -1,0 +1,11 @@
+{
+  "name": "TRACE the dots",
+  "description": "TRACE the dots to find the flag...",
+  "points": 30,
+  "hints": ["GET and POST are not the only types of requests..."],
+  "hasContainer": true,
+  "imageName": "trace-exercise",
+  "imageTag": "latest",
+  "imagePort": "2800",
+  "flag": "hrsCTF{GET_outta_h3re}"
+}

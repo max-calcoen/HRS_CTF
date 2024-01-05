@@ -1,7 +1,7 @@
 import sqlite3
 
 
-connection = sqlite3.connect("db.sqlite")
+connection = sqlite3.connect("container/db.sqlite")
 with open("schema.sql") as f:
     connection.executescript(f.read())
 

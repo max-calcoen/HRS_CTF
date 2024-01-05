@@ -1,8 +1,0 @@
-{
-  "name": "tab attack",
-  "description": "terminal tabcomplete :0 <a href='/file_request/8_tab_attack/atooqstqqvjvatzizmxv.zip'>atooqstqqvjvatzizmxv.zip</a>",
-  "points": 25,
-  "hints": [],
-  "hasServer": false,
-  "flag": "hrsCTF{th3nks_addadshashanammu}"
-}

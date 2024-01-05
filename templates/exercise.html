@@ -109,15 +109,45 @@
     <div id="confetti-container"></div>
     <div class="exercise-content">
       <h1 class="exercise-title">
-        <data id="prob_id" value="{{exercise.prob_id}}"
-          >{{ exercise.name }}</data
-        >
+        <data id="ex_id" value="{{exercise.ex_id}}">{{ exercise.name }}</data>
       </h1>
       <div class="exercise-points">{{ exercise.points }} points</div>
 
       <div class="exercise-section">
         <p>{{ exercise.description|safe }}</p>
       </div>
+      {% if exercise.hasContainer %}
+      <div>
+        <button id="containerButton">toggle exercise instance</button>
+        <p id="status"></p>
+      </div>
+      <script>
+        const handleButton = async () => {
+          // turn off button until fetch complete
+          let button = document.getElementById("containerButton");
+          button.onclick = null;
+          let res = await fetch("/request_container", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ ex_id: {{exercise.ex_id}} }),
+          });
+          let json = await res.json();
+          let ptag = document.getElementById("status");
+          if ((await res.status) == 400) ptag.innerHTML = json.error;
+          else ptag.innerHTML = json.success;
+        };
+        window.onload = document.getElementById("containerButton").onclick =
+          () => {
+            try {
+              handleButton();
+            } catch (e) {}
+            document.getElementById("containerButton").onclick = handleButton;
+          };
+      </script>
+      {% endif %}
       <form class="exercise-section" action="">
         {% for hint in exercise.hints %}
         <div class="hintwrapper">
@@ -158,7 +188,7 @@
               },
               body: JSON.stringify({
                 flag: document.getElementById("flag").value,
-                prob_id: document.getElementById("prob_id").value,
+                ex_id: document.getElementById("ex_id").value,
               }),
             });
 

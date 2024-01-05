@@ -1,22 +1,39 @@
-# TODO: normal "ex_id" and "prob_id"
+# TODO: user gets no feedback when trying to make account with taken username
 
-import os
-from flask import Flask, current_app, send_from_directory, session, request, jsonify, redirect, render_template  # type: ignore
-import secrets
-import sqlite3
-import bcrypt
-import redis
-from subprocess import Popen
-import threading
+import atexit
 import json
+import os
+import secrets
+import socket
+import sqlite3
+
+import bcrypt
+import docker
+import redis
+from flask import (
+    Flask,
+    current_app,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+)
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = secrets.token_hex()
 
+
+# TODO: configure persistence
 # connect to redis
-redis_client = redis.StrictRedis(
-    host="localhost", port=6379, db=0, decode_responses=True
-)
+redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
+SESSION_TIMEOUT = 3600  # 1 hr
+
+# create a Docker client connected to the local Docker daemon
+docker_client = docker.from_env()
+
+containers = {}
 
 
 # if logged in, return id, otherwise false
@@ -31,7 +48,6 @@ def is_logged_in():
     )
 
 
-# index.html override
 @app.route("/")
 def home():
     # get username from session cache
@@ -132,6 +148,8 @@ def login():
         session_token = os.urandom(24).hex()
         redis_client.set(session_token, user[0])
         session["token"] = session_token
+        # TODO: tell user when they're being logged out or disable expiration
+        redis_client.setex(session_token, SESSION_TIMEOUT, user[0])
         connection.close()
         return jsonify({"success": "Login successful"}), 200
     connection.close()
@@ -149,42 +167,109 @@ def signout():
     return redirect("/")
 
 
-@app.route("/file_request/<path:filename>", methods=["GET"])
-def file_request(filename):
-    if "exercise.json" in filename:
-        return jsonify({"error": "Bad request"}), 400
-    uploads = os.path.join(current_app.root_path, "gym_resources")
-    file_path = os.path.join(uploads, filename)
-    if not os.path.exists(file_path):
-        return jsonify({"error": "File not found"}), 404
-    return send_from_directory(uploads, filename, as_attachment=True)
-
-
-@app.route("/request_server", methods=["POST"])
-def request_server():
-    exercise = request.json["exercise"]
-
-    # filter user input
-    try:
-        exercise = int(exercise)
-    except:
-        return jsonify({"error": "Invalid exercise id"}), 400
-
-    # get path
-    path = os.listdir("gym_resources")[exercise - 1]
-
-    def target():
+@app.route("/file_request/<path:ex_id>/<path:filename>", methods=["GET"])
+def file_request(filename, ex_id):
+    gym_path = os.path.join(current_app.root_path, "gym_resources")
+    file_path = None
+    print(ex_id, filename)
+    # get list of folders in gym_resources
+    for path in os.listdir(gym_path):
         try:
-            process = Popen(["python", f"gym_resources/{path}/app.py"])
-            process.wait(600)  # 10 mins
-            if process.poll() is None:
-                process.terminate()
+            if int(path[0:2]) == int(ex_id):
+                file_path = os.path.join(path, "public", filename)
+                break
         except:
-            return jsonify({"error": "Bad exercise request"}), 400
+            return jsonify({"error": "Wrong exercise ID"}), 400
 
-    thread = threading.Thread(target=target)
-    thread.start()
-    return jsonify({"success": "Server started"}), 200
+    if file_path is None:
+        return jsonify({"error": "Wrong exercise ID"}), 400
+    if not os.path.exists(os.path.join(gym_path, file_path)):
+        return jsonify({"error": "File not found"}), 404
+    return send_from_directory(gym_path, file_path, as_attachment=True)
+
+
+@app.route("/request_container", methods=["POST"])
+def request_container():
+    if not is_logged_in():
+        return jsonify({"error": "User is not signed in"}), 400
+    ex_id = request.json["ex_id"]
+    # get container
+    abs_gym_path = os.path.join(current_app.root_path, "gym_resources")
+    ex_path = None
+    # find container
+    for path in os.listdir(abs_gym_path):
+        try:
+            if int(path[0:2]) == int(ex_id):
+                ex_path = path
+                break
+        except:
+            return jsonify({"error": "Wrong exercise ID"}), 400
+
+    if os.path.join(ex_path, "container") is None:
+        return jsonify({"error": "Wrong exercise ID"}), 400
+
+    if not os.path.exists(
+        os.path.join(abs_gym_path, os.path.join(ex_path, "container"))
+    ):
+        return jsonify({"error": "Container not found"}), 404
+
+    user_id = redis_client.get(session.get("token"))
+    # check if user has active container
+    if containers.keys().__contains__(user_id):
+        # post request
+        return redirect("/stop_container", code=307)
+
+    # get image name from exercise.json file
+    with open(os.path.join(abs_gym_path, ex_path, "exercise.json"), "r") as ex_file:
+        ex_dict = json.load(ex_file)
+        image_name = ex_dict["imageName"]
+        image_tag = ex_dict["imageTag"]
+        image_port = ex_dict["imagePort"]
+
+    # get open port
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))  # Bind to a free port provided by the host.
+        open_port = s.getsockname()[1]  # Return the port number assigned.
+
+    # start container
+    container = docker_client.containers.run(
+        f"{image_name}:{image_tag}",
+        name=f"user{user_id}-ex{ex_id}",
+        volumes={
+            os.getcwd(): {
+                "bind": os.path.join(abs_gym_path, ex_path, "container", "app"),
+                "mode": "rw",
+            }
+        },
+        ports={image_port: open_port},
+        detach=True,
+    )
+    # add container to dict
+    containers[user_id] = container
+    # add container timeout
+    return (
+        jsonify(
+            {
+                "success": f"Container started successfully on port {open_port} (visit <a href='http://localhost:{open_port}' target='_blank'>http://localhost:{open_port}</a>)"
+            }
+        ),
+        200,
+    )
+
+
+@app.route("/stop_container", methods=["POST"])
+def stop_container():
+    if not is_logged_in():
+        return jsonify({"error": "User is not signed in"}), 400
+    user_id = redis_client.get(session.get("token"))
+    if not containers.keys().__contains__(user_id):
+        return jsonify({"error": "User does not have an active container"}), 400
+
+    # stop container
+    containers[user_id].stop()
+    containers[user_id].remove()
+    containers.pop(user_id)
+    return jsonify({"success": "Container stopped"}), 200
 
 
 @app.route("/gym")
@@ -194,20 +279,18 @@ def get_gym():
         connection = sqlite3.connect("users.sqlite")
         cur = connection.cursor()
         cur.execute(
-            "SELECT completedproblems FROM users WHERE id = ?",
-            (redis_client.get(session.get("token"))),
+            "SELECT completedexercise FROM users WHERE id = ?",
+            (redis_client.get(session.get("token")),),
         )
         try:
-            completed_ex = [
-                int(prob) for prob in cur.fetchone()[0].strip("[]").split(",")
-            ]
+            completed_ex = [int(ex) for ex in cur.fetchone()[0].strip("[]").split(",")]
         except:
             completed_ex = []
         connection.close()
     # get gym data
     all_ex = []
     for i, filename in enumerate(
-        sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))
+        sorted(os.listdir("gym_resources"), key=lambda x: int(x[0:2]))
     ):
         with open(f"gym_resources/{filename}/exercise.json", "r") as ex_file:
             ex_dict = json.load(ex_file)
@@ -245,13 +328,12 @@ def get_exercise(ex_id):
     # get gym data
     if ex_id > len(os.listdir("gym_resources")):
         return jsonify({"error": "Invalid exercise id"}), 400
-
     with open(
-        f"gym_resources/{sorted(os.listdir('gym_resources'), key=lambda x: int(x[0]))[ex_id - 1]}/exercise.json",
+        f"gym_resources/{sorted(os.listdir('gym_resources'), key=lambda x: int(x[0:2]))[ex_id - 1]}/exercise.json",
         "r",
     ) as ex_file:
         ex_dict = json.load(ex_file)
-        ex_dict["prob_id"] = ex_id
+        ex_dict["ex_id"] = ex_id
     return render_template("exercise.html", exercise=ex_dict)
 
 
@@ -259,16 +341,16 @@ def get_exercise(ex_id):
 def submit_flag():
     # filter user input
     try:
-        prob_id = int(request.json["prob_id"])
+        ex_id = int(request.json["ex_id"])
         # TODO: .DS_Store check
-        if prob_id > len(os.listdir("gym_resources")):
-            raise ValueError("Invalid problem id")
+        if ex_id > len(os.listdir("gym_resources")):
+            raise ValueError("Invalid exercise id")
     except:
-        return jsonify({"error": "invalid problem id"}), 400
+        return jsonify({"error": "invalid exercise id"}), 400
 
     session_token = session.get("token")
     if session_token is None:
-        return jsonify({"error": "Sign in to complete this problem!"}), 400
+        return jsonify({"error": "Sign in to complete this exercise!"}), 400
 
     # make sure user actually signed in
     user_id = redis_client.get(session_token)
@@ -276,58 +358,66 @@ def submit_flag():
         return jsonify({"error": "invalid session token"}), 400
 
     # get exercise file from gym_resources
-    resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
-        prob_id - 1
-    ]
+    resource_folder_path = sorted(
+        os.listdir("gym_resources"), key=lambda x: int(x[0:2])
+    )[ex_id - 1]
     with open(f"gym_resources/{resource_folder_path}/exercise.json", "r") as ex_file:
         ex_dict = json.load(ex_file)
 
     if ex_dict["flag"] == request.json["flag"]:
-        if handle_completed_ex(prob_id, user_id):
-            return jsonify({"success": "flag correct!"}), 200
+        if handle_completed_ex(ex_id, user_id):
+            return jsonify({"success": "Flag correct!"}), 200
         else:
-            return jsonify({"error": "problem already completed!"}), 400
+            return jsonify({"error": "Exercise already completed!"}), 400
     return jsonify({"error": "Flag incorrect!"}), 400
 
 
-def handle_completed_ex(prob_id, user_id):
+def handle_completed_ex(ex_id, user_id):
     # connect to db
     connection = sqlite3.connect("users.sqlite")
     cur = connection.cursor()
     # get user info
     cur.execute(
-        "SELECT completedproblems, gympoints FROM users WHERE id = ?",
+        "SELECT completedexercises, gympoints FROM users WHERE id = ?",
         (user_id),
     )
     db_res = cur.fetchone()
-    probs = db_res[0].strip("[]").split(", ")
+    exs = db_res[0].strip("[]").split(", ")
     # parse: len 0 will return []
     try:
-        probs = [int(prob) for prob in probs]
+        exs = [int(ex) for ex in exs]
     except:
-        probs = []
-    # prob already completed
-    if prob_id in probs:
+        exs = []
+    # ex already completed
+    if ex_id in exs:
         return False
-    # add problem to problems
-    probs.append(int(prob_id))
+    # add ex to exs
+    exs.append(int(ex_id))
     # get curr amount of points
     curr_pts = int(db_res[1])
     # TODO: .DS_Store check
     resource_folder_path = sorted(os.listdir("gym_resources"), key=lambda x: int(x[0]))[
-        prob_id - 1
+        ex_id - 1
     ]
     with open(
         f"gym_resources/{resource_folder_path}/exercise.json", "r"
     ) as points_file:
         points = json.load(points_file)["points"]
-    # update db: add points, mark completed problem
+    # update db: add points, mark completed ex
     connection.executescript(
-        f"UPDATE users SET completedproblems = '{probs}', gympoints = {curr_pts + points} WHERE id={redis_client.get(session.get('token'))}"
+        f"UPDATE users SET completedexercises = '{exs}', gympoints = {curr_pts + points} WHERE id={redis_client.get(session.get('token'))}"
     )
     connection.commit()
     connection.close()
     return True
+
+
+# remove containers on exit
+@atexit.register
+def goodbye():
+    for container in containers.values():
+        container.stop()
+        container.remove()
 
 
 if __name__ == "__main__":

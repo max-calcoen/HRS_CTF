@@ -1,0 +1,11 @@
+{
+    "name": "Spooky Networks",
+    "description": "Somewhere buried in this model lies a special key: <a href='/file_request/12/hidden_flag_model.h5'>download</a>",
+    "points": 25,
+    "hints": [
+      "Using Keras, spell out the weights' message"
+    ],
+    "hasContainer": false,
+    "flag": "hrsCTF{sp00ky}"
+  }
+  

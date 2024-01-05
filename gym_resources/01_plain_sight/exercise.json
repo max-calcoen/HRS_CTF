@@ -1,8 +1,8 @@
 {
-  "name": "plain sight",
-  "description": "this flag is hidden in <a href='/file_request/1/flag'>plain sight</a>",
+  "name": "Plain Sight",
+  "description": "This flag is hidden in <a href='/file_request/1/flag'>plain sight</a>",
   "points": 10,
-  "hints": ["download the file and open it to find the flag"],
+  "hints": ["Download the file and open it to find the flag"],
   "hasContainer": false,
   "flag": "hrsCTF{h3llo_w0rld}"
 }

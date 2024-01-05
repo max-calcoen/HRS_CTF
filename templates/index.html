@@ -1,65 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Index</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
-      }
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
 
-      #background {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background-color: #76c7f6;
-        overflow: hidden;
-        z-index: -1;
-      }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-      .digit {
-        position: absolute;
-        color: rgba(255, 255, 255, 0.5);
-        font-family: "Courier New", monospace;
-        font-size: 60px;
-        font-weight: bold;
-      }
+        #background {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            
+        }
 
-      .content {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        position: relative;
-        z-index: 1;
-      }
+        .digit {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: "Courier New", monospace;
+            font-size: 60px;
+            font-weight: bold;
+        }
 
-      .centered-content {
-        text-align: center;
-      }
+        .content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .centered-content {
+            text-align: center;
+            color: white;
+        }
+
+        a {
+            color: #FFD700;
+            text-decoration: none;
+            font-size: 1.2em;
+            margin: 10px;
+            transition: color 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        p {
+            margin: 5px 0;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div id="background"></div>
 
     <div class="content">
-      <div class="centered-content">
-        {% if username %}
-        <p>welcome, {{username}}!</p>
-        <p>points: {{points}}</p>
-        <a href="/signout">Sign Out</a>
-        {% else %}
-        <p><a href="/signin">Sign In</a></p>
-        <p><a href="/signup.html">Sign Up</a></p>
-        {% endif %}
-        <p><a href="/gym">Gym</a></p>
-        <p><a href="/leaderboard">Leaderboard</a></p>
-      </div>
+        <div class="centered-content">
+            {% if username %}
+            <p>Welcome, {{username}}!</p>
+            <p>Points: {{points}}</p>
+            <a href="/signout">Sign Out</a>
+            {% else %}
+            <p><a href="/signin">Sign In</a></p>
+            <p><a href="/signup.html">Sign Up</a></p>
+            {% endif %}
+            <p><a href="/gym">Gym</a></p>
+            <p><a href="/leaderboard">Leaderboard</a></p>
+        </div>
     </div>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -96,5 +123,5 @@
         }
       });
     </script>
-  </body>
+</body>
 </html>

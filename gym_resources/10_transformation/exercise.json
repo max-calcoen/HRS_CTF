@@ -1,8 +1,8 @@
 {
-  "name": "polyglot",
-  "description": "we've intercepted a message, but <a href='/file_request/10/foreign'>this definitely isn't english</a>... we also found out that this was used to encrypt the message: ''.join([chr((ord(flag[i]) << 8) + ord(flag[i + 1])) for i in range(0, len(flag), 2)])",
-  "points": 30,
-  "hints": ["python wielders might fare better than east asian linguists..."],
+  "name": "Polyglot",
+  "description": "We've intercepted a message, but <a href='/file_request/10/foreign'>this definitely isn't english</a>... we also found out that this was used to encrypt the message: ''.join([chr((ord(flag[i]) << 8) + ord(flag[i + 1])) for i in range(0, len(flag), 2)])",
+  "points": 25,
+  "hints": ["Python wielders might fare better than East Asian linguists..."],
   "hasContainer": false,
   "flag": "hrsCTF{b1tsh1ft}"
 }

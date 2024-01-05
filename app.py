@@ -277,7 +277,15 @@ def stop_container():
 @app.route("/gym")
 def get_gym():
     completed_ex = []
-    user_id = redis_client.get(session.get("token"))
+    session_token = session.get("token")
+
+    if session_token is None:
+        return redirect("/signin")
+
+    user_id = redis_client.get(session_token)
+    if user_id is None:
+        return redirect("/signin")
+
     user = users_dbm.get_user(user_id)
     if is_logged_in():
         completed_ex = user.completed_ex
@@ -412,10 +420,9 @@ def leaderboard():
     users = cur.fetchall()
 
     users_list = [
-        {"rank": i, "username": user[0], "gympoints": user[1]}
+        {"rank": i+1, "username": user[0], "gympoints": user[1]}
         for i, user in enumerate(users)
     ]
-    print(users_list)
     return render_template("leaderboard.html", sorted_players=users_list)
 
 

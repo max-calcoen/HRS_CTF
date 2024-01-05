@@ -1,31 +1,61 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .content-container {
-    width: 300px;
-    margin: 100px auto;
+    background-color: rgba(242, 145, 145, 0.8);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     text-align: center;
+    max-width: 300px;
 }
 
-form input {
-    margin: 10px 0;
-    padding: 10px;
-    width: 90%;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-form button {
-    padding: 10px 15px;
+input[type="text"],
+input[type="password"] {
     width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
     background-color: #4caf50;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-form button:hover {
+input[type="submit"]:hover {
     background-color: #45a049;
+}
+
+p {
+    color: #fff;
+}
+
+a {
+    color: #FFD700;
+    text-decoration: none;
 }

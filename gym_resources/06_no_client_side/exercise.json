@@ -1,10 +1,10 @@
 {
-  "name": "no client side",
-  "description": "can you break into this <a href='/gym/6_no_clientside.html' target='_blank'>hyper-secure portal?</a>",
-  "points": 50,
+  "name": "No Client Side",
+  "description": "Can you break into this <a href='/gym/6_no_clientside.html' target='_blank'>hyper-secure portal?</a>",
+  "points": 45,
   "hints": [
-    "maybe taking a look at the source code can help?",
-    "try using the inspect element of your browser (google how to access)"
+    "Maybe taking a look at the source code can help?",
+    "Try using the inspect element of your browser (Google how to access)"
   ],
   "hasContainer": false,
   "flag": "hrsCTF{supersecret_passw0rd1322}"

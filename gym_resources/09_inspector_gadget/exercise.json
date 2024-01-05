@@ -1,9 +1,9 @@
 {
-  "name": "inspector gadget",
-  "description": "chief quimby has instructed you to take a <a href='/gym/9_inspectme.html' target='_blank'>look at this website!</a> quick, before the evil dr. claw gets to you!",
+  "name": "Inspector Gadget",
+  "description": "Chief quimby has instructed you to take a <a href='/gym/9_inspectme.html' target='_blank'>look at this website!</a> quick, before the evil dr. claw gets to you!",
   "points": 30,
   "hints": [
-    "open the inspect tool by right clicking and selecting 'inspect' (unless using safari)"
+    "Open the inspect tool by right clicking and selecting 'inspect' (unless using safari)"
   ],
   "hasContainer": false,
   "flag": "hrsCTF{thr0ghthes3w3rs}"

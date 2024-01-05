@@ -1,88 +1,96 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>X: {{exercise.name}}</title>
-    <style type="text/css">
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #76c7f6;
-        padding: 20px;
-      }
-      data:hover::after {
-        content: " (ID: " attr(value) ")";
-        font-size: 0.7em;
-      }
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            padding: 20px;
+            color: #fff;
+        }
 
-      .exercise-content {
-        background-color: white;
-        max-width: 800px;
-        margin: auto;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(92, 80, 80, 0.2);
-      }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-      .exercise-title {
-        color: #333;
-        text-align: center;
-      }
+        .exercise-content {
+            background-color: white;
+            color: black;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(92, 80, 80, 0.2);
+        }
 
-      .exercise-points {
-        text-align: center;
-        color: #666;
-        font-size: 1.4em;
-        margin-bottom: 20px;
-      }
+        .exercise-title {
+            color: #333;
+            text-align: center;
+        }
 
-      .exercise-section {
-        margin-bottom: 20px;
-      }
+        .exercise-points {
+            text-align: center;
+            color: #666;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+        }
 
-      .hint {
-        display: none;
-        padding: 10px;
-        background-color: #eee;
-        border-radius: 5px;
-        margin: 10px;
-      }
+        .exercise-section {
+            margin-bottom: 20px;
+        }
 
-      input[type="text"] {
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
+        .hint {
+            display: none;
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin: 10px;
+        }
 
-      input[type="submit"] {
-        background-color: #057c09;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 10px;
-      }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
 
-      input[type="submit"]:hover {
-        background-color: #45a049;
-      }
+        input[type="submit"] {
+            background-color: #057c09;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
 
-      .hintwrapper {
-        display: block;
-      }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
 
-      #confetti-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        overflow: hidden;
-        z-index: 9999;
-      }
+        .hintwrapper {
+            display: block;
+        }
+
+        #confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
 
       .confetti-piece {
         position: absolute;

@@ -1,13 +1,13 @@
 {
-  "name": "sql injection",
-  "description": "can you hack <a href='/file_request/5/app.py'>this app?</a>",
-  "points": 10,
+  "name": "SQL Injection",
+  "description": "Can you hack <a href='/file_request/5/app.py'>this app?</a>",
+  "points": 60,
   "hints": [
-    "what's scary about this line? cursor.execute(request.form[\"query\"])"
+    "What's scary about this line? cursor.execute(request.form[\"query\"])"
   ],
   "hasContainer": true,
   "imageName": "sql-exercise",
   "imageTag": "latest",
   "imagePort": "2800",
-  "flag": "TODO"
+  "flag": "hrsCTF{1nject10n}"
 }

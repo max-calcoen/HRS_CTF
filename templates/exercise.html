@@ -138,14 +138,10 @@
           let ptag = document.getElementById("status");
           if ((await res.status) == 400) ptag.innerHTML = json.error;
           else ptag.innerHTML = json.success;
+          document.getElementById("containerButton").onclick = handleButton;
         };
         window.onload = document.getElementById("containerButton").onclick =
-          () => {
-            try {
-              handleButton();
-            } catch (e) {}
-            document.getElementById("containerButton").onclick = handleButton;
-          };
+          handleButton;
       </script>
       {% endif %}
       <form class="exercise-section" action="">

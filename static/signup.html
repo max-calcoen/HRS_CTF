@@ -34,8 +34,9 @@
         document
           .getElementById("signinform")
           .addEventListener("submit", async (e) => {
+            // prevent submission
             e.preventDefault();
-
+            // ask server to add user
             let res = await fetch("/signup", {
               method: "POST",
               headers: {
@@ -46,12 +47,12 @@
                 password: document.getElementById("password").value,
               }),
             });
-            let d = await res.json();
+            // alert user
             if (res.status == 200) {
               alert(`Welcome, ${document.getElementById("username").value}`);
               window.location.href = "/";
-            } else if (res.status == 401) {
-              alert("Incorrect username or password!");
+            } else {
+              alert("Username taken!");
             }
           });
       };

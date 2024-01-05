@@ -14,11 +14,12 @@
         .info-container p {
             margin: 10px 0; 
             font-size: 1.2em;
-            color: #fff;
+            color: rgb(0, 0, 0);
         }
+
         body {
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
+            background: linear-gradient(-45deg, #d3f0fb, #cef6ec, #f7cdc1, #facedf);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             margin: 0;
@@ -75,6 +76,7 @@
 
         p {
             font-size: 1.2em;
+            
         }
     </style>
 </head>
@@ -87,7 +89,7 @@
     {% else %}
         <p>Sign up <a href="/signup" style="color: #FFD700;">here</a> (or <a href="/signin" style="color: #FFD700;">sign in</a>) to save your progress!</p>
     {% endif %}
-    <p><a href="/index">Return to Home</a></p>
+    <p><a href="/">Return to Home</a></p>
 </div>
     <div class="gym-container">
       {% for exercise in exercises %}

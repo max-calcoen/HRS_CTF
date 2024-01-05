@@ -1,0 +1,11 @@
+{
+  "name": "AI shenanigans",
+  "description": "we've discovered a bunch of hand-drawn digits, but we have no idea how to interpret them. try building a neural network to help us out! here are the images your network should be able to decipher: <a href='/file_request/13/discovered_images.zip'>download</a>",
+  "points": 75,
+  "hints": [
+    "remember, flags look like hrsCTF{answer}",
+    "try training your neural network on this dataset: <a href='/file_request/13/mnist_dataset.npz'>download</a>"
+  ],
+  "hasContainer": false,
+  "flag": "hrsCTF{5041921314}"
+}

@@ -1,127 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Index</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-        }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Roboto", sans-serif;
+        background: linear-gradient(-45deg, #d3f0fb, #cef6ec, #f7cdc1, #facedf);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+      }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+      @keyframes gradientBG {
+        0% {
+          background-position: 0% 50%;
         }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
 
-        #background {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: -1;
-            
-        }
+      #background {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+      }
 
-        .digit {
-            position: absolute;
-            color: rgba(255, 255, 255, 0.5);
-            font-family: "Courier New", monospace;
-            font-size: 60px;
-            font-weight: bold;
-        }
+      .digit {
+        position: absolute;
+        color: rgba(255, 255, 255, 0.5);
+        font-family: "Courier New", monospace;
+        font-size: 60px;
+        font-weight: bold;
+      }
 
-        .content {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            position: relative;
-            z-index: 1;
-        }
+      .content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        position: relative;
+        z-index: 1;
+      }
 
-        .centered-content {
-            text-align: center;
-            color: white;
-        }
+      .centered-content {
+        background-color: #1d614f;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        max-width: 300px;
+      }
 
-        a {
-            color: #FFD700;
-            text-decoration: none;
-            font-size: 1.2em;
-            margin: 10px;
-            transition: color 0.3s;
-        }
+      a {
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 3.2em;
+        margin: 10px;
+        transition: color 0.3s;
+      }
 
-        a:hover {
-            color: #fff;
-        }
+      a:hover {
+        color: #ffd700;
+      }
 
-        p {
-            margin: 5px 0;
-        }
+      p {
+        margin: 5px 0;
+      }
+
+      #welcome {
+        font-size: 3.2em;
+        color: white;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="background"></div>
 
     <div class="content">
-        <div class="centered-content">
-            {% if username %}
-            <p>Welcome, {{username}}!</p>
-            <p>Points: {{points}}</p>
-            <a href="/signout">Sign Out</a>
-            {% else %}
-            <p><a href="/signin">Sign In</a></p>
-            <p><a href="/signup.html">Sign Up</a></p>
-            {% endif %}
-            <p><a href="/gym">Gym</a></p>
-            <p><a href="/leaderboard">Leaderboard</a></p>
-        </div>
+      <div class="centered-content">
+        {% if username %}
+        <p id="welcome">Welcome, {{username}}!</p>
+        <p id="welcome">Points: {{points}}</p>
+        <br />
+        <br />
+        <a href="/signout">Sign Out</a>
+        <br />
+        {% else %}
+        <p><a href="/signin">Sign In</a></p>
+        <p><a href="/signup.html">Sign Up</a></p>
+        {% endif %}
+        <p><a href="/gym">Gym</a></p>
+        <p><a href="/leaderboard">Leaderboard</a></p>
+      </div>
     </div>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const background = document.getElementById("background");
-        const numDigits = 50; // amt of digits to display
-
-        for (let i = 0; i < numDigits; i++) {
-          let digit = document.createElement("div");
-          digit.classList.add("digit");
-          digit.textContent = Math.random() < 0.5 ? "0" : "1"; // randomly choose between displaying 0s or 1s
-
-          background.appendChild(digit); // display the digit on the background
-          animateDigit(digit); // add some movement
-        }
-
-        function animateDigit(digit) {
-          digit.style.left = Math.random() * window.innerWidth + "px"; // set random x position
-          digit.style.top = Math.random() * window.innerHeight + "px"; // set random y position
-
-          moveDigit(digit);
-
-          // repeat animation
-          setInterval(() => {
-            moveDigit(digit);
-          }, (Math.random() * 1 + 1) * 1000); // different duration per interval
-        }
-
-        function moveDigit(digit) {
-          let moveDuration = Math.random() * 5 + 7; // min duration of 7 seconds, max of 12
-          digit.style.transition = `transform ${moveDuration}s linear`; // update transformation duration
-          digit.style.transform = `translateY(${
-            Math.random() < 0.5 ? "-" : "" // randomly assign up or down movement
-          }${window.innerHeight}px)`;
-        }
-      });
-    </script>
-</body>
+  </body>
 </html>

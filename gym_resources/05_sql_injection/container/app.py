@@ -7,6 +7,11 @@ PORT = 2800
 app = Flask(__name__)
 
 
+@app.route("/")
+def index():
+    return "is this the right route?"
+
+
 @app.route("/SQLAdmin", methods=["POST"])
 def SQLAdmin():
     try:

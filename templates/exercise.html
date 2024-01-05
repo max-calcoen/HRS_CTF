@@ -1,96 +1,105 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>X: {{exercise.name}}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            padding: 20px;
-            color: #fff;
-        }
+      body {
+        font-family: "Roboto", sans-serif;
+        background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        padding: 20px;
+        color: #fff;
+      }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+      @keyframes gradientBG {
+        0% {
+          background-position: 0% 50%;
         }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
 
-        .exercise-content {
-            background-color: white;
-            color: black;
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(92, 80, 80, 0.2);
-        }
+      .exercise-content {
+        background-color: white;
+        color: black;
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(92, 80, 80, 0.2);
+      }
 
-        .exercise-title {
-            color: #333;
-            text-align: center;
-        }
+      .exercise-title {
+        color: #333;
+        text-align: center;
+      }
 
-        .exercise-points {
-            text-align: center;
-            color: #666;
-            font-size: 1.4em;
-            margin-bottom: 20px;
-        }
+      .exercise-points {
+        text-align: center;
+        color: #666;
+        font-size: 1.4em;
+        margin-bottom: 20px;
+      }
 
-        .exercise-section {
-            margin-bottom: 20px;
-        }
+      .exercise-section {
+        margin-bottom: 20px;
+      }
 
-        .hint {
-            display: none;
-            padding: 10px;
-            background-color: #eee;
-            border-radius: 5px;
-            margin: 10px;
-        }
+      .hint {
+        display: none;
+        padding: 10px;
+        background-color: #eee;
+        border-radius: 5px;
+        margin: 10px;
+      }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
 
-        input[type="submit"] {
-            background-color: #057c09;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-        }
+      input[type="submit"] {
+        background-color: #057c09;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+      }
 
-        input[type="submit"]:hover {
-            background-color: #45a049;
-        }
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
 
-        .hintwrapper {
-            display: block;
-        }
+      .hintwrapper {
+        display: block;
+      }
 
-        #confetti-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 9999;
-        }
+      #confetti-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 9999;
+      }
 
       .confetti-piece {
         position: absolute;
@@ -184,7 +193,9 @@
         document
           .getElementById("flagform")
           .addEventListener("submit", async (e) => {
+            // prevent submission
             e.preventDefault();
+            // authenticate flag with server
             let res = await fetch("/flag", {
               method: "POST",
               headers: {
@@ -195,11 +206,11 @@
                 ex_id: document.getElementById("ex_id").value,
               }),
             });
-
             if ((await res.status) == 200) {
+              // correct, so trigger confetti animation
               triggerConfetti();
             } else {
-              // TODO: shake the box, turn red
+              // wrong or error, so alert server message
               let msg = await res.json();
               alert(msg["error"]);
             }
@@ -210,12 +221,21 @@
         checkbox.addEventListener("change", () => {
           const hintDiv = document.getElementById(`hint${index + 1}`);
           if (checkbox.checked) {
+            // show hint
             hintDiv.style.display = "block";
           } else {
+            // hide hint
             hintDiv.style.display = "none";
           }
         });
       });
+      /**
+       * Creates and styles a single piece of confetti, then appends it to the confetti container.
+       * The confetti piece's position, color, rotation, and animation duration are set randomly.
+       * The piece of confetti is automatically removed after its fall animation ends.
+       *
+       * @param {number} x - The x-coordinate for the confetti piece, determining where it spawns horizontally.
+       */
 
       function createConfettiPiece(x) {
         const confettiPiece = document.createElement("div");
@@ -239,7 +259,11 @@
           confettiPiece.remove();
         });
       }
-
+      /**
+       * Triggers the confetti effect by creating multiple confetti pieces.
+       * The function calculates the width of the confetti container and then spawns
+       * a specified number of confetti pieces across the container's width.
+       */
       function triggerConfetti() {
         const confettiContainer = document.getElementById("confetti-container");
         const width = confettiContainer.offsetWidth;

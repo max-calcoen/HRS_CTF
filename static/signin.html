@@ -34,8 +34,9 @@
         document
           .getElementById("signinform")
           .addEventListener("submit", async (e) => {
+            // prevent submission
             e.preventDefault();
-
+            // ask server to log user in
             let res = await fetch("/signin", {
               method: "POST",
               headers: {
@@ -46,6 +47,7 @@
                 password: document.getElementById("password").value,
               }),
             });
+            // alert user
             if (res.status == 200) {
               alert(`Welcome, ${document.getElementById("username").value}`);
               window.location.href = "/";

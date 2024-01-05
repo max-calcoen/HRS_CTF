@@ -1,6 +1,6 @@
 body {
     font-family: 'Roboto', sans-serif;
-    background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
+    background: linear-gradient(-45deg, #d3f0fb, #cef6ec, #f7cdc1, #facedf);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
     margin: 0;
@@ -17,7 +17,7 @@ body {
 }
 
 .content-container {
-    background-color: rgba(242, 145, 145, 0.8);
+    background-color: #1D614F;
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -39,8 +39,8 @@ input[type="submit"] {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    background-color: #4caf50;
-    color: white;
+    background-color: #BCFFD3;
+    color: #1D614F;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -48,11 +48,11 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
-    background-color: #45a049;
+    background-color: #A0D9B5;
 }
 
 p {
-    color: #fff;
+    color: #fffefb;
 }
 
 a {

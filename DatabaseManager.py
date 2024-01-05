@@ -15,9 +15,19 @@ class DatabaseManager:
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
         res = cursor.fetchone()
+        if res is None:
+            return None
         user = User(res)
         connection.close()
         return user
+
+    def get_user_id(self, username):
+        connection = self.__connect()
+        cursor = connection.cursor()
+        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+        res = cursor.fetchone()
+        connection.close()
+        return res[0] if res else False
 
     def get_users(self):
         connection = self.__connect()
@@ -46,3 +56,24 @@ class DatabaseManager:
         )
         connection.commit()
         connection.close()
+
+    def add_user(self, user):
+        connection = self.__connect()
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO users (username, passhash, gympoints, completedexercises) VALUES (?, ?, ?, ?)",
+            (
+                user.username,
+                user.password,
+                user.points,
+                dumps(user.completed_ex),
+            ),
+        )
+        connection.commit()
+        cursor.execute(
+            "SELECT id FROM users WHERE username=?",
+            (user.username,),
+        )
+        user.id = cursor.fetchone()[0]
+        connection.close()
+        return user.id

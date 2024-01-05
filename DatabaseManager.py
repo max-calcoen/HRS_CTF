@@ -20,7 +20,7 @@ class DatabaseManager:
         return user
 
     def get_users(self):
-        connection = self._connect()
+        connection = self.__connect()
         cursor = connection.cursor()
         try:
             cursor.execute("SELECT * FROM users")
@@ -32,10 +32,10 @@ class DatabaseManager:
         return users
 
     def update_user(self, user):
-        connection = self._connect()
+        connection = self.__connect()
         cursor = connection.cursor()
         cursor.execute(
-            "UPDATE users SET username = ?, password = ?, points = ?, completed_ex = ? WHERE id = ?",
+            "UPDATE users SET username = ?, passhash = ?, gympoints = ?, completedexercises = ? WHERE id = ?",
             (
                 user.username,
                 user.password,
@@ -46,16 +46,3 @@ class DatabaseManager:
         )
         connection.commit()
         connection.close()
-
-
-# test
-if __name__ == "__main__":
-    dbm = DatabaseManager("users.sqlite")
-    print([str(u) for u in dbm.get_users()])
-
-
-# test
-if __name__ == "__main__":
-    print(
-        [str(u) for u in DatabaseManager(sqlite3.connect("users.sqlite")).get_users()]
-    )

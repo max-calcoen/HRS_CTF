@@ -39,6 +39,8 @@ docker_client = docker.from_env()
 
 containers = {}
 
+users_dbm = DatabaseManager("users.sqlite")
+
 
 # if logged in, return id, otherwise false
 def is_logged_in():
@@ -172,7 +174,6 @@ def signout():
 def file_request(filename, ex_id):
     gym_path = os.path.join(current_app.root_path, "gym_resources")
     file_path = None
-    print(ex_id, filename)
     # get list of folders in gym_resources
     for path in os.listdir(gym_path):
         try:
@@ -370,7 +371,7 @@ def handle_completed_ex(ex_id, user_id):
     # connect to db
     user = users_dbm.get_user(user_id)
     exs = user.completed_ex
-    if not exs:
+    if exs is None:
         return False
     # ex already completed
     if ex_id in exs:

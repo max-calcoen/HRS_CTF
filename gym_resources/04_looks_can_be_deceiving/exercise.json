@@ -1,0 +1,12 @@
+{
+  "name": "looks can be deceiving",
+  "description": "color isn't the only thing infused into this image. use a steganographic approach to decode the message hidden in the pixels: <a href='/file_request/4/modified_image.png'>download</a>",
+  "points": 30,
+  "hints": [
+    "the last two bits of each pixel's color channel might say something...",
+    "8 bits make a character",
+    "hmmm... <a href='https://www.geeksforgeeks.org/how-to-convert-images-to-numpy-array/'>this</a> looks helpful"
+  ],
+  "hasContainer": false,
+  "flag": "hrsCTF{solv3d!}"
+}

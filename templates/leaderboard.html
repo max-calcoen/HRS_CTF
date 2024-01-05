@@ -9,17 +9,21 @@
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding-top: 60px; 
         }
 
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
+        }
+
+        .content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 60px);
         }
 
         table {
@@ -57,23 +61,37 @@
         td {
             border-bottom: 1px solid #ddd;
         }
+
+        .return {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px;
+            border-radius: 0 0 10px 10px;
+        }
     </style>
 </head>
 <body>
-    <table>
-        <thead>
-            <th>Ranking</th>
-            <th>Player</th>
-            <th>Total Points</th>
-        </thead>
-        <!-- add new row for each new player, in sorted order (sort by amt of exercises solved?)-->
-        {% for playerInfo in sorted_players %}
-        <tr>
-            <td>{{playerInfo.rank}}</td>
-            <td>{{playerInfo.username}}</td>
-            <td>{{playerInfo.gympoints}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="return">
+        <a href="/">Return to Home</a>
+    </div>
+
+    <div class="content">
+        <table>
+            <thead>
+                <th>Ranking</th>
+                <th>Player</th>
+                <th>Total Points</th>
+            </thead>
+            {% for playerInfo in sorted_players %}
+            <tr>
+                <td>{{playerInfo.rank}}</td>
+                <td>{{playerInfo.username}}</td>
+                <td>{{playerInfo.gympoints}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </body>
 </html>

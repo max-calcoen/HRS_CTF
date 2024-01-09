@@ -3,8 +3,6 @@ import atexit
 import os
 import secrets
 import socket
-import sqlite3
-import threading
 from subprocess import Popen
 
 import bcrypt
@@ -264,15 +262,27 @@ def request_container():
         image_tag = ex_dict["imageTag"]
         image_port = ex_dict["imagePort"]
 
+    # Find a free port
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))  # Bind to a free port provided by the host.
+        host_port = s.getsockname()[1]  # Get the port number assigned.
+
     # Start the container using the Docker client
     container = docker_client.containers.run(
         f"{image_name}:{image_tag}",
         name=f"user{user_id}-ex{ex_id}",
-        ports={image_port: None},
+        ports={image_port: host_port},
         detach=True,
     )
     containers[user_id] = container
-    return jsonify({"success": f"Container started successfully"}), 200
+    return (
+        jsonify(
+            {
+                "success": f"Container started successfully on port {host_port}, access at <a href='http://127.0.0.1:{host_port}' target='_blank'>127.0.0.1:{host_port}</a>"
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/stop_container", methods=["POST"])
@@ -295,12 +305,13 @@ def stop_container():
     containers.pop(user_id)
     return jsonify({"success": "Container stopped"}), 200
 
+
 @app.route("/gym")
 def get_gym():
     """
     Route to display the gym page where users can see and select exercises. It retrieves
     the list of all exercises and marks those that have been completed by the user.
-    
+
     Returns:
         Rendered gym template with exercises information or redirects to the sign-in page.
     """
@@ -470,6 +481,7 @@ def goodbye():
     This function is registered to execute when the application exits.
     It ensures that any active Docker containers are stopped and removed.
     """
+    print("clearing containers...")
     for container in containers.values():
         container.stop()
         container.remove()

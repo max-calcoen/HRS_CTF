@@ -1,9 +1,8 @@
-import json
 import atexit
+import json
 import os
 import secrets
 import socket
-from subprocess import Popen
 
 import bcrypt
 import docker
@@ -18,6 +17,7 @@ from flask import (
     send_from_directory,
     session,
 )
+
 from DatabaseManager import DatabaseManager
 from User import User
 
@@ -47,7 +47,7 @@ def is_logged_in():
     """
     global redis_client
     session_token = session.get("token")
-    # Check if token exists and matches session cache
+    # check if token exists and matches session cache
     return (
         redis_client.get(session_token)
         if session_token is not None and redis_client.get(session_token) is not None
@@ -110,10 +110,10 @@ def signup():
         JSON response indicating success or failure.
     """
     global redis_client
-    # Check if user is already signed in
+    # check if user is already signed in
     if "username" in session:
         return jsonify({"error": "User is already signed in"}), 400
-    # Validate user input
+    # validate user input
     if (
         len(request.json["username"]) < 6
         or len(request.json["username"]) > 15
@@ -122,20 +122,20 @@ def signup():
     ):
         return jsonify({"error": "Bad username or password"}), 400
 
-    # Check if user already exists
+    # check if user already exists
     user = users_dbm.get_user(users_dbm.get_user_id(request.json["username"]))
     if user is not None:
         return jsonify({"error": "User already exists"}), 400
 
-    # Hash the password
+    # hash the password
     hashed_password = bcrypt.hashpw(
         request.json["password"].encode("utf-8"), bcrypt.gensalt()
     )
-    # Create a new user instance
+    # create a new user instance
     user = User((0, request.json["username"], hashed_password, 0, "[]"))
     u_id = users_dbm.add_user(user)
 
-    # Create a session token and store it in Redis
+    # create a session token and store it in Redis
     session_token = os.urandom(24).hex()
     redis_client.set(session_token, u_id)
     session["token"] = session_token
@@ -155,7 +155,7 @@ def login():
     user = users_dbm.get_user(users_dbm.get_user_id(request.json["username"]))
 
     if user is None:
-        # Dummy check to equalize response time (prevent timing attack)
+        # dummy check to equalize response time (prevent timing attack)
         bcrypt.checkpw(
             request.json["password"].encode("utf-8"),
             b"$2b$12$eUhSqBS3J/ZqoZFZW/iOWe/P7JlBybwNDIZTbflwUajSqr0d6vlce",
@@ -202,7 +202,7 @@ def file_request(filename, ex_id):
     """
     gym_path = os.path.join(current_app.root_path, "gym_resources")
     file_path = None
-    # Iterate through gym_resources to find the requested file
+    # iterate through gym_resources to find the requested file
     for path in os.listdir(gym_path):
         try:
             if int(path[0:2]) == int(ex_id):
@@ -231,7 +231,7 @@ def request_container():
     if not is_logged_in():
         return jsonify({"error": "User is not signed in"}), 400
     ex_id = request.json["ex_id"]
-    # Find the specified exercise container
+    # find the specified exercise container
     abs_gym_path = os.path.join(current_app.root_path, "gym_resources")
     ex_path = None
     for path in os.listdir(abs_gym_path):
@@ -251,23 +251,23 @@ def request_container():
         return jsonify({"error": "Container not found"}), 404
 
     user_id = redis_client.get(session.get("token"))
-    # Check if user already has an active container
+    # check if user already has an active container
     if containers.keys().__contains__(user_id):
         return redirect("/stop_container", code=307)
 
-    # Extract image details and start the container
+    # extract image details and start the container
     with open(os.path.join(abs_gym_path, ex_path, "exercise.json"), "r") as ex_file:
         ex_dict = json.load(ex_file)
         image_name = ex_dict["imageName"]
         image_tag = ex_dict["imageTag"]
         image_port = ex_dict["imagePort"]
 
-    # Find a free port
+    # find a free port
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("", 0))  # Bind to a free port provided by the host.
-        host_port = s.getsockname()[1]  # Get the port number assigned.
+        s.bind(("", 0))  # bind to a free port provided by the host.
+        host_port = s.getsockname()[1]  # get the port number assigned.
 
-    # Start the container using the Docker client
+    # start the container using the Docker client
     container = docker_client.containers.run(
         f"{image_name}:{image_tag}",
         name=f"user{user_id}-ex{ex_id}",
@@ -328,7 +328,7 @@ def get_gym():
     user = users_dbm.get_user(user_id)
     if is_logged_in():
         completed_ex = user.completed_ex
-    # Retrieve all exercises and their completion status
+    # retrieve all exercises and their completion status
     all_ex = []
     for i, filename in enumerate(
         sorted(os.listdir("gym_resources"), key=lambda x: int(x[0:2]))
@@ -362,7 +362,7 @@ def get_exercise(ex_id):
         Rendered exercise template with the exercise details or an error message.
     """
     try:
-        ex_id = int(ex_id)  # Ensure the exercise ID is an integer
+        ex_id = int(ex_id)  # ensure the exercise ID is an integer
     except ValueError:
         return jsonify({"error": "Invalid exercise id"}), 400
 
@@ -402,7 +402,7 @@ def submit_flag():
     if user_id is None:
         return jsonify({"error": "Invalid session token"}), 400
 
-    # Validate the submitted flag
+    # validate the submitted flag
     resource_folder_path = sorted(
         os.listdir("gym_resources"), key=lambda x: int(x[0:2])
     )[ex_id - 1]
@@ -433,11 +433,11 @@ def handle_completed_ex(ex_id, user_id):
     user = users_dbm.get_user(user_id)
     exs = user.completed_ex
     if ex_id in exs:
-        return False  # Exercise already completed
+        return False
 
-    exs.append(int(ex_id))  # Mark the exercise as completed
+    exs.append(int(ex_id))  # mark the exercise as completed
 
-    # Update user's points based on the exercise's point value
+    # update user's points based on the exercise's point value
     resource_folder_path = sorted(
         os.listdir("gym_resources"), key=lambda x: int(x[0:2])
     )[ex_id - 1]

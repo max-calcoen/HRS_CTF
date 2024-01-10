@@ -139,8 +139,13 @@
         <p id="status"></p>
       </div>
       <script>
+        /**
+         * Handles the button click to toggle an exercise instance.
+         * It sends a POST request to the server and updates the status paragraph
+         * with the response from the server.
+         */
         const handleButton = async () => {
-          // turn off button until fetch complete
+          // disable button during fetch operation
           let button = document.getElementById("containerButton");
           button.onclick = null;
           let res = await fetch("/request_container", {
@@ -151,17 +156,21 @@
             },
             body: JSON.stringify({ ex_id: {{exercise.ex_id}} }),
           });
+          // process response
           let json = await res.json();
           let ptag = document.getElementById("status");
           if ((await res.status) == 400) ptag.innerHTML = json.error;
           else ptag.innerHTML = json.success;
+          // reattach event listener
           document.getElementById("containerButton").onclick = handleButton;
         };
+        // attach event listener to button on load
         window.onload = document.getElementById("containerButton").onclick =
           handleButton;
       </script>
       {% endif %}
       <form class="exercise-section" action="">
+        <!-- create hint div for each exercse hint -->
         {% for hint in exercise.hints %}
         <div class="hintwrapper">
           <input
@@ -189,6 +198,7 @@
       <p><a href="/gym">Return to Gym</a></p>
     </div>
     <script>
+      // attach form submission event handler
       window.onload = () => {
         document
           .getElementById("flagform")
@@ -206,6 +216,7 @@
                 ex_id: document.getElementById("ex_id").value,
               }),
             });
+            // process response
             if ((await res.status) == 200) {
               // correct, so trigger confetti animation
               triggerConfetti();

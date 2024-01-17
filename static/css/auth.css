@@ -59,3 +59,8 @@ a {
     color: #FFD700;
     text-decoration: none;
 }
+
+.minitext {
+    font-size: 9pt;
+    margin: 2px 1px;
+}

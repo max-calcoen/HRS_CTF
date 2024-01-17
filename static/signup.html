@@ -12,21 +12,25 @@
           name="username"
           placeholder="Username"
           id="username"
-          minlength="6"
-          maxlength="15"
+          minlength="4"
+          maxlength="12"
           required
         />
+        <p class="minitext">
+          6 chars, only letters, numbers, underscores and dashes
+        </p>
         <input
           type="password"
           name="password"
           placeholder="Password"
           id="password"
           minlength="8"
-          maxlength="20"
           required
         />
+        <p class="minitext">8 chars, one number and one uppercase letters</p>
         <input type="submit" value="Sign Up" />
       </form>
+      <p id="message" style="display: hidden"></p>
       <p>...or, <a href="/signin">Sign In </a></p>
     </div>
     <script>
@@ -47,13 +51,15 @@
                 password: document.getElementById("password").value,
               }),
             });
-            // alert user
+            // return to user
+            msg = await res.json();
             if (res.status == 200) {
-              alert(`Welcome, ${document.getElementById("username").value}`);
               window.location.href = "/";
+              document.getElementById("message").innerText = msg["success"];
             } else {
-              alert("Username taken!");
+              document.getElementById("message").innerText = msg["error"];
             }
+            document.getElementById("message").style.display = "block";
           });
       };
     </script>

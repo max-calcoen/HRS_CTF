@@ -82,14 +82,14 @@
 </head>
 <body>
   <div class="info-container">
+      <p><a href="/">Return to Home</a></p>
     {% if uname %}
         <p>Welcome, {{uname}}</p>
         <p>Points: {{points}}</p>
         
     {% else %}
-        <p>Sign up <a href="/signup" style="color: #FFD700;">here</a> (or <a href="/signin" style="color: #FFD700;">sign in</a>) to save your progress!</p>
+        <p>Sign up <a href="/signup">here</a> (or <a href="/signin">sign in</a>) to save your progress!</p>
     {% endif %}
-    <p><a href="/">Return to Home</a></p>
 </div>
     <div class="gym-container">
       {% for exercise in exercises %}

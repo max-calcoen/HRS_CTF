@@ -1,12 +1,13 @@
 import atexit
 import json
 import os
-import secrets
+import re
 import socket
 
 import bcrypt
 import docker
 import redis
+from dotenv import load_dotenv
 from flask import (
     Flask,
     current_app,
@@ -21,21 +22,21 @@ from flask import (
 from DatabaseManager import DatabaseManager
 from User import User
 
-# Initialize the Flask application
+# initialize the Flask application
 app = Flask(__name__, static_url_path="")
-app.secret_key = secrets.token_hex()
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
-# Connect to Redis database for session management
+# connect to Redis database for session management
 redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
 
-# Create a Docker client connected to the local Docker daemon
+# create a Docker client connected to the local Docker daemon
 docker_client = docker.from_env()
 
-# Global dictionary to keep track of active Docker containers
+# global dictionary to keep track of active Docker containers
 containers = {}
 
-# Initialize the DatabaseManager for handling users' data
-users_dbm = DatabaseManager("users.sqlite")
+# initialize the DatabaseManager for handling users' data
+users_dbm = DatabaseManager(os.environ.get("DATABASE_PATH"))
 
 
 def is_logged_in():
@@ -110,21 +111,37 @@ def signup():
         JSON response indicating success or failure.
     """
     global redis_client
+
     # check if user is already signed in
     if "username" in session:
         return jsonify({"error": "User is already signed in"}), 400
-    # validate user input
+
+    # extract and sanitize username and password
+    username = request.json.get("username", "").strip()
+    password = request.json.get("password", "")
+
+    # validate username format using regular expressions
+    if not re.match("^[A-Za-z0-9_\-]{4,12}$", username):
+        return jsonify({"error": "Invalid username format"}), 400
+
+    # validate password length and complexity
     if (
-        len(request.json["username"]) < 6
-        or len(request.json["username"]) > 15
-        or len(request.json["password"]) < 8
-        or len(request.json["password"]) > 20
+        len(password) < 8
+        or len(password) > 50
+        or not re.search("[0-9]", password)
+        or not re.search("[A-Z]", password)
     ):
-        return jsonify({"error": "Bad username or password"}), 400
+        return (
+            jsonify(
+                {
+                    "error": "Password must be 8 characters long and include at least one number and one uppercase letters"
+                }
+            ),
+            400,
+        )
 
     # check if user already exists
-    user = users_dbm.get_user(users_dbm.get_user_id(request.json["username"]))
-    if user is not None:
+    if users_dbm.get_user(users_dbm.get_user_id(username)) is not None:
         return jsonify({"error": "User already exists"}), 400
 
     # hash the password
@@ -132,7 +149,7 @@ def signup():
         request.json["password"].encode("utf-8"), bcrypt.gensalt()
     )
     # create a new user instance
-    user = User((0, request.json["username"], hashed_password, 0, "[]"))
+    user = User((0, username, hashed_password, 0, "[]"))
     u_id = users_dbm.add_user(user)
 
     # create a session token and store it in Redis
@@ -316,17 +333,11 @@ def get_gym():
         Rendered gym template with exercises information or redirects to the sign-in page.
     """
     completed_ex = []
-    session_token = session.get("token")
 
-    if session_token is None:
-        return redirect("/signin")
-
-    user_id = redis_client.get(session_token)
-    if user_id is None:
-        return redirect("/signin")
-
-    user = users_dbm.get_user(user_id)
     if is_logged_in():
+        session_token = session.get("token")
+        user_id = redis_client.get(session_token)
+        user = users_dbm.get_user(user_id)
         completed_ex = user.completed_ex
     # retrieve all exercises and their completion status
     all_ex = []
@@ -488,4 +499,5 @@ def goodbye():
 
 
 if __name__ == "__main__":
-    app.run(port=8080)
+    load_dotenv()
+    app.run(port=8080, debug=True)
